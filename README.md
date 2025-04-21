@@ -2,7 +2,7 @@
 
 MIST is a comprehensive MCP (Model Context Protocol) server that empowers AI assistants with real-world capabilities for note-taking and Gmail integration. It bridges the gap between AI assistants and external tools, allowing them to save, edit, create, and delete notes, as well as access and interact with Gmail, including reading messages, searching emails, and sending new messages.
 
-![MIST Banner](https://via.placeholder.com/800x200?text=MIST:+Extending+AI+Assistant+Capabilities)
+![MIST Banner](icon.jpg)
 
 ## What is MCP (Model Context Protocol)?
 

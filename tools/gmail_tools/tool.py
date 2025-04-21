@@ -244,6 +244,9 @@ def search_emails(
 
     for msg_info in messages:
         msg_id = msg_info.get("id")
+        if msg_id is None:
+            continue
+            
         message = get_message(service, msg_id, user_id=settings.user_id)
         headers = get_headers_dict(message)
 
@@ -277,6 +280,9 @@ def query_emails(query: str, max_results: int = 10) -> str:
 
     for msg_info in messages:
         msg_id = msg_info.get("id")
+        if msg_id is None:
+            continue
+            
         message = get_message(service, msg_id, user_id=settings.user_id)
         headers = get_headers_dict(message)
 

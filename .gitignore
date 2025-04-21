@@ -1,8 +1,8 @@
 #personally added
 notes
 .python-version
-
-
+uv.lock
+token.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

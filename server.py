@@ -1,9 +1,15 @@
 # server.py
 from mcp.server.fastmcp import FastMCP
-from tools.note_tools import register_tools
+from tools.note_tools import register_tools_note
+from tools.gmail_tools import register_tools_mail
 
 # Create an MCP server
-mcp = FastMCP("M.I.S.T.")
+mcp = FastMCP("M.I.S.T.",
+    instructions="Save, Edit, Create, Delete Notes, Access and interact with Gmail. You can get messages, threads, search emails, and send or compose new messages."
+    )
 
 # Register note tools
-register_tools(mcp)
+register_tools_note(mcp)
+
+# Register mail tools
+register_tools_mail(mcp)

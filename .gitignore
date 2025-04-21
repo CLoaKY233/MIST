@@ -1,7 +1,8 @@
 #personally added
 notes
 .python-version
-uv.lock
+credentials.json
+temp.json
 token.json
 
 # Byte-compiled / optimized / DLL files

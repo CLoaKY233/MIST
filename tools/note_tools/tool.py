@@ -459,7 +459,7 @@ def organize_notes_by_subject() -> str:
     return output
 
 # Add an __init__.py file to make note_tools a proper package
-def register_tools(mcp):
+def register_tools_note(mcp):
     """Register all note tools with the MCP server."""
     mcp.tool()(add_note)
     mcp.tool()(read_note)

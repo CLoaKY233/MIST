@@ -22,8 +22,8 @@ Add the following configuration to your Claude Desktop settings to connect to th
         "B:\\Upcoming\\mist\\server.py"
       ],
       "env": {
-        "MCP_GMAIL_CREDENTIALS_PATH": "B:\\Upcoming\\mist\\credentials.json",
-        "MCP_GMAIL_TOKEN_PATH": "B:\\Upcoming\\mist\\token.json"
+        "MIST_GOOGLE_CREDENTIALS_PATH": "B:\\Upcoming\\mist\\credentials.json",
+        "MIST_GOOGLE_TOKEN_PATH": "B:\\Upcoming\\mist\\token.json"
       }
     }
   }
@@ -50,8 +50,8 @@ Add the following configuration to your Zed editor settings to connect to the MI
         "B:\\Upcoming\\mist\\server.py"
       ],
       "env": {
-        "MCP_GMAIL_CREDENTIALS_PATH": "B:\\Upcoming\\mist\\credentials.json",
-        "MCP_GMAIL_TOKEN_PATH": "B:\\Upcoming\\mist\\token.json"
+        "MIST_GOOGLE_CREDENTIALS_PATH": "B:\\Upcoming\\mist\\credentials.json",
+        "MIST_GOOGLE_TOKEN_PATH": "B:\\Upcoming\\mist\\token.json"
       }
     },
     "settings": {

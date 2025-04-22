@@ -1,4 +1,3 @@
-
 """
 Gmail MCP Server Implementation
 
@@ -6,13 +5,9 @@ This module provides a Model Context Protocol server for interacting with Gmail.
 It exposes Gmail messages as resources and provides tools for composing and sending emails.
 """
 
-
-
-
 import re
 from datetime import datetime
 from typing import Optional
-from mcp.server.fastmcp import FastMCP
 
 
 from tools.gmail_tools.config import settings
@@ -29,13 +24,12 @@ from tools.gmail_tools.gmail import (
     search_messages,
 )
 from tools.gmail_tools.gmail import send_email as gmail_send_email
+from tools.gmail_tools.gmail import get_gmail_service
+from tools.google_api import settings
 
-service = get_gmail_service(
-    credentials_path=settings.credentials_path, token_path=settings.token_path, scopes=settings.scopes
-)
-
-
+service = get_gmail_service()
 EMAIL_PREVIEW_LENGTH = 200
+
 
 def format_message(message):
     """Format a Gmail message for display."""
@@ -83,8 +77,6 @@ def validate_date_format(date_str):
         return False
 
 
-
-
 # Resources
 def get_email_message(message_id: str) -> str:
     """
@@ -99,7 +91,6 @@ def get_email_message(message_id: str) -> str:
     message = get_message(service, message_id, user_id=settings.user_id)
     formatted_message = format_message(message)
     return formatted_message
-
 
 
 def get_email_thread(thread_id: str) -> str:
@@ -125,8 +116,13 @@ def get_email_thread(thread_id: str) -> str:
 
 # Tools
 
+
 def compose_email(
-    to: str, subject: str, body: str, cc: Optional[str] = None, bcc: Optional[str] = None
+    to: str,
+    subject: str,
+    body: str,
+    cc: Optional[str] = None,
+    bcc: Optional[str] = None,
 ) -> str:
     """
     Compose a new email draft.
@@ -141,9 +137,21 @@ def compose_email(
     Returns:
         The ID of the created draft and its content
     """
-    sender = service.users().getProfile(userId=settings.user_id).execute().get("emailAddress")
+    sender = (
+        service.users()
+        .getProfile(userId=settings.user_id)
+        .execute()
+        .get("emailAddress")
+    )
     draft = create_draft(
-        service, sender=sender, to=to, subject=subject, body=body, user_id=settings.user_id, cc=cc, bcc=bcc
+        service,
+        sender=sender,
+        to=to,
+        subject=subject,
+        body=body,
+        user_id=settings.user_id,
+        cc=cc,
+        bcc=bcc,
     )
 
     draft_id = draft.get("id")
@@ -157,9 +165,12 @@ Body: {body[:EMAIL_PREVIEW_LENGTH]}{"..." if len(body) > EMAIL_PREVIEW_LENGTH el
 """
 
 
-
 def send_email(
-    to: str, subject: str, body: str, cc: Optional[str] = None, bcc: Optional[str] = None
+    to: str,
+    subject: str,
+    body: str,
+    cc: Optional[str] = None,
+    bcc: Optional[str] = None,
 ) -> str:
     """
     Compose and send an email.
@@ -174,9 +185,21 @@ def send_email(
     Returns:
         Content of the sent email
     """
-    sender = service.users().getProfile(userId=settings.user_id).execute().get("emailAddress")
+    sender = (
+        service.users()
+        .getProfile(userId=settings.user_id)
+        .execute()
+        .get("emailAddress")
+    )
     message = gmail_send_email(
-        service, sender=sender, to=to, subject=subject, body=body, user_id=settings.user_id, cc=cc, bcc=bcc
+        service,
+        sender=sender,
+        to=to,
+        subject=subject,
+        body=body,
+        user_id=settings.user_id,
+        cc=cc,
+        bcc=bcc,
     )
 
     message_id = message.get("id")
@@ -188,7 +211,6 @@ CC: {cc or ""}
 BCC: {bcc or ""}
 Body: {body[:EMAIL_PREVIEW_LENGTH]}{"..." if len(body) > EMAIL_PREVIEW_LENGTH else ""}
 """
-
 
 
 def search_emails(
@@ -221,7 +243,9 @@ def search_emails(
     """
     # Validate date formats
     if after_date and not validate_date_format(after_date):
-        return f"Error: after_date '{after_date}' is not in the required format YYYY/MM/DD"
+        return (
+            f"Error: after_date '{after_date}' is not in the required format YYYY/MM/DD"
+        )
 
     if before_date and not validate_date_format(before_date):
         return f"Error: before_date '{before_date}' is not in the required format YYYY/MM/DD"
@@ -263,7 +287,6 @@ def search_emails(
     return result
 
 
-
 def query_emails(query: str, max_results: int = 10) -> str:
     """
     Search for emails using a raw Gmail query string.
@@ -275,7 +298,9 @@ def query_emails(query: str, max_results: int = 10) -> str:
     Returns:
         Formatted list of matching emails
     """
-    messages = list_messages(service, user_id=settings.user_id, max_results=max_results, query=query)
+    messages = list_messages(
+        service, user_id=settings.user_id, max_results=max_results, query=query
+    )
 
     result = f'Found {len(messages)} messages matching query: "{query}"\n'
 
@@ -297,7 +322,6 @@ def query_emails(query: str, max_results: int = 10) -> str:
         result += f"Date: {date}\n"
 
     return result
-
 
 
 def list_available_labels() -> str:
@@ -322,7 +346,6 @@ def list_available_labels() -> str:
     return result
 
 
-
 def mark_message_read(message_id: str) -> str:
     """
     Mark a message as read by removing the UNREAD label.
@@ -335,7 +358,11 @@ def mark_message_read(message_id: str) -> str:
     """
     # Remove the UNREAD label
     result = modify_message_labels(
-        service, user_id=settings.user_id, message_id=message_id, remove_labels=["UNREAD"], add_labels=[]
+        service,
+        user_id=settings.user_id,
+        message_id=message_id,
+        remove_labels=["UNREAD"],
+        add_labels=[],
     )
 
     # Get message details to show what was modified
@@ -347,7 +374,6 @@ Message marked as read:
 ID: {message_id}
 Subject: {subject}
 """
-
 
 
 def add_label_to_message(message_id: str, label_id: str) -> str:
@@ -363,7 +389,11 @@ def add_label_to_message(message_id: str, label_id: str) -> str:
     """
     # Add the specified label
     result = modify_message_labels(
-        service, user_id=settings.user_id, message_id=message_id, remove_labels=[], add_labels=[label_id]
+        service,
+        user_id=settings.user_id,
+        message_id=message_id,
+        remove_labels=[],
+        add_labels=[label_id],
     )
 
     # Get message details to show what was modified
@@ -384,7 +414,6 @@ ID: {message_id}
 Subject: {subject}
 Added Label: {label_name} ({label_id})
 """
-
 
 
 def remove_label_from_message(message_id: str, label_id: str) -> str:
@@ -408,7 +437,11 @@ def remove_label_from_message(message_id: str, label_id: str) -> str:
 
     # Remove the specified label
     result = modify_message_labels(
-        service, user_id=settings.user_id, message_id=message_id, remove_labels=[label_id], add_labels=[]
+        service,
+        user_id=settings.user_id,
+        message_id=message_id,
+        remove_labels=[label_id],
+        add_labels=[],
     )
 
     # Get message details to show what was modified
@@ -421,7 +454,6 @@ ID: {message_id}
 Subject: {subject}
 Removed Label: {label_name} ({label_id})
 """
-
 
 
 def get_emails(message_ids: list[str]) -> str:
@@ -464,7 +496,6 @@ def get_emails(message_ids: list[str]) -> str:
             result += f"Error: {error}\n"
 
     return result
-
 
 
 # Add an __init__.py file to make note_tools a proper package

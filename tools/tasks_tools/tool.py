@@ -5,12 +5,8 @@ This module provides a Model Context Protocol server for interacting with Google
 It exposes Tasks as resources and provides tools for managing tasks and task lists.
 """
 
-import re
-from datetime import datetime
 from typing import Optional
-from mcp.server.fastmcp import FastMCP
 
-from tools.tasks_tools.config import settings
 from tools.tasks_tools.tasks import (
     get_tasks_service,
     list_task_lists,
@@ -20,14 +16,13 @@ from tools.tasks_tools.tasks import (
     delete_task,
     complete_task,
     create_task_list,
-    delete_task_list
+    delete_task_list,
 )
 
-service = get_tasks_service(
-    credentials_path=settings.credentials_path,
-    token_path=settings.token_path,
-    scopes=settings.scopes
-)
+from tools.tasks_tools.tasks import get_tasks_service
+
+service = get_tasks_service()
+
 
 # Resources
 def get_task_list(task_list_id: str) -> str:
@@ -49,11 +44,12 @@ def get_task_list(task_list_id: str) -> str:
     for task in tasks:
         result += f"\nTitle: {task.get('title', 'Untitled')}\n"
         result += f"Status: {task.get('status', 'Unknown')}\n"
-        if task.get('notes'):
+        if task.get("notes"):
             result += f"Notes: {task.get('notes')}\n"
-        if task.get('due'):
+        if task.get("due"):
             result += f"Due: {task.get('due')}\n"
     return result
+
 
 def get_task(task_list_id: str, task_id: str) -> str:
     """
@@ -70,11 +66,12 @@ def get_task(task_list_id: str, task_id: str) -> str:
     result = f"Task (ID: {task_id})\n"
     result += f"Title: {task.get('title', 'Untitled')}\n"
     result += f"Status: {task.get('status', 'Unknown')}\n"
-    if task.get('notes'):
+    if task.get("notes"):
         result += f"Notes: {task.get('notes')}\n"
-    if task.get('due'):
+    if task.get("due"):
         result += f"Due: {task.get('due')}\n"
     return result
+
 
 # Tools
 def list_task_lists_tool() -> str:
@@ -95,11 +92,12 @@ def list_task_lists_tool() -> str:
         result += f"ID: {task_list.get('id', 'Unknown')}\n"
     return result
 
+
 def create_task_tool(
     task_list_id: str,
     title: str,
     notes: Optional[str] = None,
-    due: Optional[str] = None
+    due: Optional[str] = None,
 ) -> str:
     """
     Create a new task in a specified task list.
@@ -116,18 +114,19 @@ def create_task_tool(
     task = create_task(service, task_list_id, title, notes, due)
     return f"""
 Task created successfully:
-ID: {task.get('id', 'Unknown')}
+ID: {task.get("id", "Unknown")}
 Title: {title}
 Notes: {notes or ""}
 Due: {due or "Not specified"}
 """
+
 
 def update_task_tool(
     task_list_id: str,
     task_id: str,
     title: Optional[str] = None,
     notes: Optional[str] = None,
-    due: Optional[str] = None
+    due: Optional[str] = None,
 ) -> str:
     """
     Update an existing task.
@@ -147,11 +146,12 @@ def update_task_tool(
     result = f"Task updated successfully (ID: {task_id}):\n"
     result += f"Title: {task.get('title', 'Untitled')}\n"
     result += f"Status: {task.get('status', 'Unknown')}\n"
-    if task.get('notes'):
+    if task.get("notes"):
         result += f"Notes: {task.get('notes')}\n"
-    if task.get('due'):
+    if task.get("due"):
         result += f"Due: {task.get('due')}\n"
     return result
+
 
 def complete_task_tool(task_list_id: str, task_id: str) -> str:
     """
@@ -165,7 +165,10 @@ def complete_task_tool(task_list_id: str, task_id: str) -> str:
         Confirmation message
     """
     task = complete_task(service, task_list_id, task_id)
-    return f"Task '{task.get('title', 'Untitled')}' (ID: {task_id}) marked as completed."
+    return (
+        f"Task '{task.get('title', 'Untitled')}' (ID: {task_id}) marked as completed."
+    )
+
 
 def delete_task_tool(task_list_id: str, task_id: str) -> str:
     """
@@ -181,6 +184,7 @@ def delete_task_tool(task_list_id: str, task_id: str) -> str:
     delete_task(service, task_list_id, task_id)
     return f"Task (ID: {task_id}) deleted successfully."
 
+
 def create_task_list_tool(title: str) -> str:
     """
     Create a new task list.
@@ -194,9 +198,10 @@ def create_task_list_tool(title: str) -> str:
     task_list = create_task_list(service, title)
     return f"""
 Task list created successfully:
-ID: {task_list.get('id', 'Unknown')}
+ID: {task_list.get("id", "Unknown")}
 Title: {title}
 """
+
 
 def delete_task_list_tool(task_list_id: str) -> str:
     """
@@ -210,6 +215,7 @@ def delete_task_list_tool(task_list_id: str) -> str:
     """
     delete_task_list(service, task_list_id)
     return f"Task list (ID: {task_list_id}) deleted successfully."
+
 
 # Register all tools with MCP
 def register_tools_tasks(mcp):

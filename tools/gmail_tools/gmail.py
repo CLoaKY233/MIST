@@ -3,16 +3,11 @@ This module provides utilities for authenticating with and using the Gmail API.
 """
 
 import base64
-import json
-import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any, Dict, List, Optional, TypeVar, cast
+from typing import Any, Dict, List, Optional
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import Resource, build
+from tools.google_api import get_google_service, settings
 
 # Default settings
 DEFAULT_CREDENTIALS_PATH = "credentials.json"
@@ -25,7 +20,7 @@ GMAIL_SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/tasks"
+    "https://www.googleapis.com/auth/tasks",
 ]
 
 # For simpler testing
@@ -35,55 +30,21 @@ GMAIL_MODIFY_SCOPE = ["https://www.googleapis.com/auth/gmail.modify"]
 # Using Any to allow access to service methods that aren't explicitly in the Resource type
 GmailService = Any  # For better type checking support
 
-def get_gmail_service(
-    credentials_path: str = DEFAULT_CREDENTIALS_PATH,
-    token_path: str = DEFAULT_TOKEN_PATH,
-    scopes: List[str] = GMAIL_SCOPES,
-) -> GmailService:
+
+def get_gmail_service() -> GmailService:
     """
     Authenticate with Gmail API and return the service object.
-
-    Args:
-        credentials_path: Path to the credentials JSON file
-        token_path: Path to save/load the token
-        scopes: OAuth scopes to request
 
     Returns:
         Authenticated Gmail API service
     """
-    creds = None
-
-    # Look for token file with stored credentials
-    if os.path.exists(token_path):
-        try:
-            with open(token_path, "r") as token:
-                token_data = json.load(token)
-                creds = Credentials.from_authorized_user_info(token_data)
-        except json.JSONDecodeError:
-            print(f"Warning: Token file at {token_path} is invalid or empty. Will re-authenticate.")
-
-    # If credentials don't exist or are invalid, authenticate
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            # Check if credentials file exists
-            if not os.path.exists(credentials_path):
-                raise FileNotFoundError(
-                    f"Credentials file not found at {credentials_path}. "
-                    "Please download your OAuth credentials from Google Cloud Console."
-                )
-
-            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
-            creds = flow.run_local_server(port=0)
-
-        # Save credentials for future runs
-        token_json = json.loads(creds.to_json())
-        with open(token_path, "w") as token:
-            json.dump(token_json, token)
-
-    # Build the Gmail service
-    return build("gmail", "v1", credentials=creds)
+    return get_google_service(
+        "gmail",
+        "v1",
+        credentials_path=settings.credentials_path,
+        token_path=settings.token_path,
+        scopes=settings.scopes,
+    )
 
 
 def create_message(
@@ -252,7 +213,9 @@ def send_email(
     return service.users().messages().send(userId=user_id, body=message).execute()
 
 
-def get_labels(service: GmailService, user_id: str = DEFAULT_USER_ID) -> List[Dict[str, Any]]:
+def get_labels(
+    service: GmailService, user_id: str = DEFAULT_USER_ID
+) -> List[Dict[str, Any]]:
     """
     Get all labels for the specified user.
 
@@ -286,7 +249,10 @@ def list_messages(
         List of message objects
     """
     response = (
-        service.users().messages().list(userId=user_id, maxResults=max_results, q=query or "").execute()
+        service.users()
+        .messages()
+        .list(userId=user_id, maxResults=max_results, q=query or "")
+        .execute()
     )
     messages = response.get("messages", [])
     return messages
@@ -378,7 +344,9 @@ def search_messages(
     return list_messages(service, user_id, max_results, query)
 
 
-def get_message(service: GmailService, message_id: str, user_id: str = DEFAULT_USER_ID) -> Dict[str, Any]:
+def get_message(
+    service: GmailService, message_id: str, user_id: str = DEFAULT_USER_ID
+) -> Dict[str, Any]:
     """
     Get a specific message by ID.
 
@@ -394,7 +362,9 @@ def get_message(service: GmailService, message_id: str, user_id: str = DEFAULT_U
     return message
 
 
-def get_thread(service: GmailService, thread_id: str, user_id: str = DEFAULT_USER_ID) -> Dict[str, Any]:
+def get_thread(
+    service: GmailService, thread_id: str, user_id: str = DEFAULT_USER_ID
+) -> Dict[str, Any]:
     """
     Get a specific thread by ID.
 
@@ -455,12 +425,16 @@ def list_drafts(
     Returns:
         List of draft objects
     """
-    response = service.users().drafts().list(userId=user_id, maxResults=max_results).execute()
+    response = (
+        service.users().drafts().list(userId=user_id, maxResults=max_results).execute()
+    )
     drafts = response.get("drafts", [])
     return drafts
 
 
-def get_draft(service: GmailService, draft_id: str, user_id: str = DEFAULT_USER_ID) -> Dict[str, Any]:
+def get_draft(
+    service: GmailService, draft_id: str, user_id: str = DEFAULT_USER_ID
+) -> Dict[str, Any]:
     """
     Get a specific draft by ID.
 
@@ -476,7 +450,9 @@ def get_draft(service: GmailService, draft_id: str, user_id: str = DEFAULT_USER_
     return draft
 
 
-def send_draft(service: GmailService, draft_id: str, user_id: str = DEFAULT_USER_ID) -> Dict[str, Any]:
+def send_draft(
+    service: GmailService, draft_id: str, user_id: str = DEFAULT_USER_ID
+) -> Dict[str, Any]:
     """
     Send an existing draft email.
 
@@ -493,7 +469,10 @@ def send_draft(service: GmailService, draft_id: str, user_id: str = DEFAULT_USER
 
 
 def create_label(
-    service: GmailService, name: str, user_id: str = DEFAULT_USER_ID, label_type: str = "user"
+    service: GmailService,
+    name: str,
+    user_id: str = DEFAULT_USER_ID,
+    label_type: str = "user",
 ) -> Dict[str, Any]:
     """
     Create a new label.
@@ -549,10 +528,17 @@ def update_label(
     if message_list_visibility:
         label["messageListVisibility"] = message_list_visibility
 
-    return service.users().labels().update(userId=user_id, id=label_id, body=label).execute()
+    return (
+        service.users()
+        .labels()
+        .update(userId=user_id, id=label_id, body=label)
+        .execute()
+    )
 
 
-def delete_label(service: GmailService, label_id: str, user_id: str = DEFAULT_USER_ID) -> None:
+def delete_label(
+    service: GmailService, label_id: str, user_id: str = DEFAULT_USER_ID
+) -> None:
     """
     Delete a label.
 
@@ -588,7 +574,12 @@ def modify_message_labels(
         Updated message object
     """
     body = {"addLabelIds": add_labels or [], "removeLabelIds": remove_labels or []}
-    return service.users().messages().modify(userId=user_id, id=message_id, body=body).execute()
+    return (
+        service.users()
+        .messages()
+        .modify(userId=user_id, id=message_id, body=body)
+        .execute()
+    )
 
 
 def batch_modify_messages_labels(
@@ -611,11 +602,17 @@ def batch_modify_messages_labels(
     Returns:
         None
     """
-    body = {"ids": message_ids, "addLabelIds": add_labels or [], "removeLabelIds": remove_labels or []}
+    body = {
+        "ids": message_ids,
+        "addLabelIds": add_labels or [],
+        "removeLabelIds": remove_labels or [],
+    }
     service.users().messages().batchModify(userId=user_id, body=body).execute()
 
 
-def trash_message(service: GmailService, message_id: str, user_id: str = DEFAULT_USER_ID) -> Dict[str, Any]:
+def trash_message(
+    service: GmailService, message_id: str, user_id: str = DEFAULT_USER_ID
+) -> Dict[str, Any]:
     """
     Move a message to trash.
 
@@ -648,7 +645,10 @@ def untrash_message(
 
 
 def get_message_history(
-    service: GmailService, history_id: str, user_id: str = DEFAULT_USER_ID, max_results: int = 100
+    service: GmailService,
+    history_id: str,
+    user_id: str = DEFAULT_USER_ID,
+    max_results: int = 100,
 ) -> Dict[str, Any]:
     """
     Get history of changes to the mailbox.

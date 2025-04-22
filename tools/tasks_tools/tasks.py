@@ -2,18 +2,9 @@
 This module provides utilities for authenticating with and using the Google Tasks API.
 """
 
-import base64
-import json
-import os
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from typing import Any, Dict, List, Optional, TypeVar, cast
+from typing import Any, Dict, List, Optional
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import Resource, build
-
+from tools.google_api import get_google_service, settings
 
 DEFAULT_CREDENTIALS_PATH = "credentials.json"
 DEFAULT_TOKEN_PATH = "token.json"
@@ -24,60 +15,27 @@ TASKS_SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/tasks"
+    "https://www.googleapis.com/auth/tasks",
 ]
 
-TaskService=Any
+TaskService = Any
 
-def get_tasks_service(
-    credentials_path: str = DEFAULT_CREDENTIALS_PATH,
-    token_path: str = DEFAULT_TOKEN_PATH,
-    scopes: List[str] = TASKS_SCOPES,
-) -> Any:
+
+def get_tasks_service() -> TaskService:
     """
     Authenticate with Tasks API and return the service object.
-
-    Args:
-        credentials_path: Path to the credentials JSON file
-        token_path: Path to save/load the token
-        scopes: OAuth scopes to request
 
     Returns:
         Authenticated Tasks API service
     """
-    creds = None
+    return get_google_service(
+        "tasks",
+        "v1",
+        credentials_path=settings.credentials_path,
+        token_path=settings.token_path,
+        scopes=settings.scopes,
+    )
 
-    # Look for token file with stored credentials
-    if os.path.exists(token_path):
-        try:
-            with open(token_path, "r") as token:
-                token_data = json.load(token)
-                creds = Credentials.from_authorized_user_info(token_data)
-        except json.JSONDecodeError:
-            print(f"Warning: Token file at {token_path} is invalid or empty. Will re-authenticate.")
-
-    # If credentials don't exist or are invalid, authenticate
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            # Check if credentials file exists
-            if not os.path.exists(credentials_path):
-                raise FileNotFoundError(
-                    f"Credentials file not found at {credentials_path}. "
-                    "Please download your OAuth credentials from Google Cloud Console."
-                )
-
-            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, scopes)
-            creds = flow.run_local_server(port=0)
-
-        # Save credentials for future runs
-        token_json = json.loads(creds.to_json())
-        with open(token_path, "w") as token:
-            json.dump(token_json, token)
-
-    # Build the Tasks service
-    return build("tasks", "v1", credentials=creds)
 
 def list_task_lists(service: Any, max_results: int = 100) -> List[Dict[str, Any]]:
     """
@@ -93,7 +51,10 @@ def list_task_lists(service: Any, max_results: int = 100) -> List[Dict[str, Any]
     response = service.tasklists().list(maxResults=max_results).execute()
     return response.get("items", [])
 
-def get_tasks(service: Any, task_list_id: str, max_results: int = 100) -> List[Dict[str, Any]]:
+
+def get_tasks(
+    service: Any, task_list_id: str, max_results: int = 100
+) -> List[Dict[str, Any]]:
     """
     Get all tasks in a specific task list.
 
@@ -105,15 +66,18 @@ def get_tasks(service: Any, task_list_id: str, max_results: int = 100) -> List[D
     Returns:
         List of task objects
     """
-    response = service.tasks().list(tasklist=task_list_id, maxResults=max_results).execute()
+    response = (
+        service.tasks().list(tasklist=task_list_id, maxResults=max_results).execute()
+    )
     return response.get("items", [])
+
 
 def create_task(
     service: Any,
     task_list_id: str,
     title: str,
     notes: Optional[str] = None,
-    due: Optional[str] = None
+    due: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Create a new task in the specified task list.
@@ -139,6 +103,7 @@ def create_task(
         task_body["due"] = due
 
     return service.tasks().insert(tasklist=task_list_id, body=task_body).execute()
+
 
 def update_task(
     service: Any,
@@ -177,7 +142,10 @@ def update_task(
     if status is not None:
         task["status"] = status
 
-    return service.tasks().update(tasklist=task_list_id, task=task_id, body=task).execute()
+    return (
+        service.tasks().update(tasklist=task_list_id, task=task_id, body=task).execute()
+    )
+
 
 def delete_task(service: Any, task_list_id: str, task_id: str) -> None:
     """
@@ -189,6 +157,7 @@ def delete_task(service: Any, task_list_id: str, task_id: str) -> None:
         task_id: ID of the task to delete
     """
     service.tasks().delete(tasklist=task_list_id, task=task_id).execute()
+
 
 def create_task_list(service: Any, title: str) -> Dict[str, Any]:
     """
@@ -204,6 +173,7 @@ def create_task_list(service: Any, title: str) -> Dict[str, Any]:
     tasklist_body = {"title": title}
     return service.tasklists().insert(body=tasklist_body).execute()
 
+
 def delete_task_list(service: Any, task_list_id: str) -> None:
     """
     Delete a task list.
@@ -213,6 +183,7 @@ def delete_task_list(service: Any, task_list_id: str) -> None:
         task_list_id: ID of the task list to delete
     """
     service.tasklists().delete(tasklist=task_list_id).execute()
+
 
 def complete_task(service: Any, task_list_id: str, task_id: str) -> Dict[str, Any]:
     """

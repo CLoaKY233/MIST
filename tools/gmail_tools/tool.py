@@ -34,6 +34,7 @@ service = get_gmail_service(
     credentials_path=settings.credentials_path, token_path=settings.token_path, scopes=settings.scopes
 )
 
+
 EMAIL_PREVIEW_LENGTH = 200
 
 def format_message(message):
@@ -246,7 +247,7 @@ def search_emails(
         msg_id = msg_info.get("id")
         if msg_id is None:
             continue
-            
+
         message = get_message(service, msg_id, user_id=settings.user_id)
         headers = get_headers_dict(message)
 
@@ -282,7 +283,7 @@ def query_emails(query: str, max_results: int = 10) -> str:
         msg_id = msg_info.get("id")
         if msg_id is None:
             continue
-            
+
         message = get_message(service, msg_id, user_id=settings.user_id)
         headers = get_headers_dict(message)
 

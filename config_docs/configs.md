@@ -60,9 +60,3 @@ Add the following configuration to your Zed editor settings to connect to the MI
   }
 }
 ```
-
-The document provides a simple structure with:
-
-1. Brief introduction to the file
-2. Claude Desktop configuration template
-3. Zed Editor configuration template

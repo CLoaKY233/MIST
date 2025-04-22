@@ -4,13 +4,15 @@ import time
 import datetime
 import json
 import re
-from pathlib import Path
 from typing import List, Dict, Optional
 
 # Notes App Configuration
-NOTES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "notes")
+NOTES_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "notes"
+)
 INDEX_FILE = os.path.join(NOTES_DIR, "index.json")
 TAGS_FILE = os.path.join(NOTES_DIR, "tags.json")
+
 
 # Ensure the notes directory and index file exist
 def ensure_notes_directory():
@@ -20,44 +22,50 @@ def ensure_notes_directory():
 
     # Create index file if it doesn't exist
     if not os.path.exists(INDEX_FILE):
-        with open(INDEX_FILE, 'w') as file:
+        with open(INDEX_FILE, "w") as file:
             json.dump([], file)
 
     # Create tags file if it doesn't exist
     if not os.path.exists(TAGS_FILE):
-        with open(TAGS_FILE, 'w') as file:
+        with open(TAGS_FILE, "w") as file:
             json.dump({}, file)
+
 
 # Helper functions
 def get_note_index() -> List[Dict]:
     """Load the note index."""
-    with open(INDEX_FILE, 'r') as file:
+    with open(INDEX_FILE, "r") as file:
         try:
             return json.load(file)
         except json.JSONDecodeError:
             return []
 
+
 def save_note_index(index: List[Dict]):
     """Save the note index."""
-    with open(INDEX_FILE, 'w') as file:
+    with open(INDEX_FILE, "w") as file:
         json.dump(index, file, indent=2)
+
 
 def get_tags() -> Dict:
     """Load the tags index."""
-    with open(TAGS_FILE, 'r') as file:
+    with open(TAGS_FILE, "r") as file:
         try:
             return json.load(file)
         except json.JSONDecodeError:
             return {}
 
+
 def save_tags(tags: Dict):
     """Save the tags index."""
-    with open(TAGS_FILE, 'w') as file:
+    with open(TAGS_FILE, "w") as file:
         json.dump(tags, file, indent=2)
+
 
 def extract_tags(content: str) -> List[str]:
     """Extract hashtags from content."""
-    return re.findall(r'#(\w+)', content)
+    return re.findall(r"#(\w+)", content)
+
 
 def update_tags(note_id: str, tags: List[str]):
     """Update tags index with the given tags."""
@@ -80,6 +88,7 @@ def update_tags(note_id: str, tags: List[str]):
 
     save_tags(tags_index)
 
+
 # Tool functions to be registered with MCP
 def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
     """
@@ -100,7 +109,7 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
 
     # Sanitize title for filename
-    safe_title = re.sub(r'[^\w\s-]', '', title).strip().replace(' ', '-').lower()
+    safe_title = re.sub(r"[^\w\s-]", "", title).strip().replace(" ", "-").lower()
     note_id = f"{date_str}-{safe_title}-{timestamp}"
     filename = f"{note_id}.md"
     filepath = os.path.join(NOTES_DIR, filename)
@@ -116,7 +125,7 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
         "modified": timestamp,
         "subject": subject,
         "tags": tags,
-        "filename": filename
+        "filename": filename,
     }
 
     # Add formatted header to content
@@ -124,11 +133,11 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
     if subject:
         formatted_content += f"Subject: {subject}\n"
     if tags:
-        formatted_content += f"Tags: {', '.join(['#'+tag for tag in tags])}\n"
+        formatted_content += f"Tags: {', '.join(['#' + tag for tag in tags])}\n"
     formatted_content += f"\n{content}\n"
 
     # Write the note to a file
-    with open(filepath, 'w') as file:
+    with open(filepath, "w") as file:
         file.write(formatted_content)
 
     # Update index
@@ -140,6 +149,7 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
     update_tags(note_id, tags)
 
     return f"Note '{title}' saved with ID: {note_id}"
+
 
 def read_note(note_id: Optional[str] = None, title: Optional[str] = None) -> str:
     """
@@ -160,7 +170,9 @@ def read_note(note_id: Optional[str] = None, title: Optional[str] = None) -> str
     if note_id:
         note_meta = next((note for note in index if note["id"] == note_id), None)
     elif title:
-        note_meta = next((note for note in index if note["title"].lower() == title.lower()), None)
+        note_meta = next(
+            (note for note in index if note["title"].lower() == title.lower()), None
+        )
 
     if not note_meta:
         return f"Note not found. Please check the ID or title."
@@ -170,12 +182,15 @@ def read_note(note_id: Optional[str] = None, title: Optional[str] = None) -> str
     if not os.path.exists(filepath):
         return f"Note file not found: {filepath}"
 
-    with open(filepath, 'r') as file:
+    with open(filepath, "r") as file:
         content = file.read()
 
     return content
 
-def list_notes(subject: Optional[str] = None, tag: Optional[str] = None, limit: int = 10) -> str:
+
+def list_notes(
+    subject: Optional[str] = None, tag: Optional[str] = None, limit: int = 10
+) -> str:
     """
     List notes, optionally filtered by subject or tag.
 
@@ -217,12 +232,15 @@ def list_notes(subject: Optional[str] = None, tag: Optional[str] = None, limit: 
         if note.get("subject"):
             output += f"   Subject: {note['subject']}\n"
         if note.get("tags"):
-            output += f"   Tags: {', '.join(['#'+tag for tag in note['tags']])}\n"
+            output += f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
         output += "\n"
 
     return output
 
-def generate_note_summary(note_id: Optional[str] = None, title: Optional[str] = None) -> str:
+
+def generate_note_summary(
+    note_id: Optional[str] = None, title: Optional[str] = None
+) -> str:
     """
     Generate a summary of a note by extracting key points.
 
@@ -235,24 +253,26 @@ def generate_note_summary(note_id: Optional[str] = None, title: Optional[str] = 
     """
     # First read the note
     note_content = read_note(note_id, title)
-    if note_content.startswith("Note not found") or note_content.startswith("Note file not found"):
+    if note_content.startswith("Note not found") or note_content.startswith(
+        "Note file not found"
+    ):
         return note_content
 
     # Extract the title from the content
-    title_match = re.search(r'^# (.+)$', note_content, re.MULTILINE)
+    title_match = re.search(r"^# (.+)$", note_content, re.MULTILINE)
     title = title_match.group(1) if title_match else "Unknown Title"
 
     # Extract headings as key points
-    headings = re.findall(r'^## (.+)$', note_content, re.MULTILINE)
+    headings = re.findall(r"^## (.+)$", note_content, re.MULTILINE)
 
     # Extract the first sentence of each paragraph as key points
-    paragraphs = re.split(r'\n\n+', note_content)
+    paragraphs = re.split(r"\n\n+", note_content)
     first_sentences = []
     for para in paragraphs:
-        if para.startswith('#') or not para.strip():
+        if para.startswith("#") or not para.strip():
             continue
         # Try to get the first sentence
-        sentence_match = re.search(r'^([^.!?]+[.!?])', para.replace('\n', ' '))
+        sentence_match = re.search(r"^([^.!?]+[.!?])", para.replace("\n", " "))
         if sentence_match:
             first_sentences.append(sentence_match.group(1).strip())
 
@@ -272,6 +292,7 @@ def generate_note_summary(note_id: Optional[str] = None, title: Optional[str] = 
 
     return summary
 
+
 def search_notes(query: str) -> str:
     """
     Search notes for a specific query string.
@@ -289,7 +310,7 @@ def search_notes(query: str) -> str:
     query = query.lower()
 
     # Check if query is a tag search
-    if query.startswith('#'):
+    if query.startswith("#"):
         tag = query[1:]
         tags_index = get_tags()
         tag_notes = tags_index.get(tag, [])
@@ -309,7 +330,7 @@ def search_notes(query: str) -> str:
 
             filepath = os.path.join(NOTES_DIR, note["filename"])
             try:
-                with open(filepath, 'r') as file:
+                with open(filepath, "r") as file:
                     content = file.read().lower()
                     if query in content:
                         results.append(note)
@@ -328,10 +349,11 @@ def search_notes(query: str) -> str:
         if note.get("subject"):
             output += f"   Subject: {note['subject']}\n"
         if note.get("tags"):
-            output += f"   Tags: {', '.join(['#'+tag for tag in note['tags']])}\n"
+            output += f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
         output += "\n"
 
     return output
+
 
 def edit_note(note_id: str, new_content: str) -> str:
     """
@@ -365,16 +387,18 @@ def edit_note(note_id: str, new_content: str) -> str:
         return f"Note file not found: {filepath}"
 
     # Add formatted header to content
-    date_str = datetime.datetime.fromtimestamp(note_meta["created"]).strftime("%Y-%m-%d")
+    date_str = datetime.datetime.fromtimestamp(note_meta["created"]).strftime(
+        "%Y-%m-%d"
+    )
     formatted_content = f"# {note_meta['title']}\n\nDate: {date_str}\n"
     if note_meta.get("subject"):
         formatted_content += f"Subject: {note_meta['subject']}\n"
     if tags:
-        formatted_content += f"Tags: {', '.join(['#'+tag for tag in tags])}\n"
+        formatted_content += f"Tags: {', '.join(['#' + tag for tag in tags])}\n"
     formatted_content += f"\n{new_content}\n"
 
     # Write the updated content
-    with open(filepath, 'w') as file:
+    with open(filepath, "w") as file:
         file.write(formatted_content)
 
     # Update the index
@@ -388,6 +412,7 @@ def edit_note(note_id: str, new_content: str) -> str:
     update_tags(note_id, tags)
 
     return f"Note '{note_meta['title']}' updated successfully."
+
 
 def delete_note(note_id: str) -> str:
     """
@@ -425,6 +450,7 @@ def delete_note(note_id: str) -> str:
 
     return f"Note '{note_meta['title']}' deleted successfully."
 
+
 def organize_notes_by_subject() -> str:
     """
     Create a summary of notes organized by subject.
@@ -457,6 +483,7 @@ def organize_notes_by_subject() -> str:
         output += "\n"
 
     return output
+
 
 # Add an __init__.py file to make note_tools a proper package
 def register_tools_note(mcp):

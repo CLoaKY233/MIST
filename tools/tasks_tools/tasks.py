@@ -10,13 +10,6 @@ DEFAULT_CREDENTIALS_PATH = "credentials.json"
 DEFAULT_TOKEN_PATH = "token.json"
 DEFAULT_USER_ID = "me"
 
-TASKS_SCOPES = [
-    "https://www.googleapis.com/auth/gmail.readonly",
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/tasks",
-]
 
 TaskService = Any
 

@@ -6,6 +6,7 @@ temp.json
 token.json
 notion_config.json
 **/__pycache__
+.ruff_cache
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

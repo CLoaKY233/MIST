@@ -272,17 +272,24 @@ def search_emails(
         if msg_id is None:
             continue
 
+        # Get full message details to properly retrieve headers
         message = get_message(service, msg_id, user_id=settings.user_id)
         headers = get_headers_dict(message)
 
+        # Extract headers with proper error handling
         from_header = headers.get("From", "Unknown")
-        subject = headers.get("Subject", "No Subject")
-        date = headers.get("Date", "Unknown Date")
+        subject_header = headers.get("Subject", "No Subject")
+        date_header = headers.get("Date", "Unknown Date")
+        
+        # Get snippet for preview
+        snippet = message.get("snippet", "")
 
         result += f"\nMessage ID: {msg_id}\n"
         result += f"From: {from_header}\n"
-        result += f"Subject: {subject}\n"
-        result += f"Date: {date}\n"
+        result += f"Subject: {subject_header}\n"
+        result += f"Date: {date_header}\n"
+        if snippet:
+            result += f"Preview: {snippet}\n"
 
     return result
 
@@ -309,17 +316,24 @@ def query_emails(query: str, max_results: int = 10) -> str:
         if msg_id is None:
             continue
 
+        # Get full message details to properly retrieve headers
         message = get_message(service, msg_id, user_id=settings.user_id)
         headers = get_headers_dict(message)
 
+        # Extract headers with proper error handling
         from_header = headers.get("From", "Unknown")
-        subject = headers.get("Subject", "No Subject")
-        date = headers.get("Date", "Unknown Date")
+        subject_header = headers.get("Subject", "No Subject")
+        date_header = headers.get("Date", "Unknown Date")
+        
+        # Get snippet for preview
+        snippet = message.get("snippet", "")
 
         result += f"\nMessage ID: {msg_id}\n"
         result += f"From: {from_header}\n"
-        result += f"Subject: {subject}\n"
-        result += f"Date: {date}\n"
+        result += f"Subject: {subject_header}\n"
+        result += f"Date: {date_header}\n"
+        if snippet:
+            result += f"Preview: {snippet}\n"
 
     return result
 

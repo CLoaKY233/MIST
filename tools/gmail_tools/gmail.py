@@ -14,18 +14,6 @@ DEFAULT_CREDENTIALS_PATH = "credentials.json"
 DEFAULT_TOKEN_PATH = "token.json"
 DEFAULT_USER_ID = "me"
 
-# Gmail API scopes
-GMAIL_SCOPES = [
-    "https://www.googleapis.com/auth/gmail.readonly",
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/tasks",
-]
-
-# For simpler testing
-GMAIL_MODIFY_SCOPE = ["https://www.googleapis.com/auth/gmail.modify"]
-
 # Define a more specific type for the Gmail service
 # Using Any to allow access to service methods that aren't explicitly in the Resource type
 GmailService = Any  # For better type checking support

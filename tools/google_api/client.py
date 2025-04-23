@@ -23,9 +23,11 @@ GOOGLE_API_SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/tasks",
+    "https://www.googleapis.com/auth/gmail.labels",                           # Read, compose, send and permanently delete all your email from Gmail
+    "https://www.googleapis.com/auth/tasks",                # Create, edit, organize and delete all your tasks
+    "https://www.googleapis.com/auth/tasks.readonly",       # View your tasks
 ]
+
 
 # Define a type for the credentials that could be returned
 GoogleCredentials = Union[Credentials, ExternalCredentials]

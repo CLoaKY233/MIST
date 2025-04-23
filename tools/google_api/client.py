@@ -20,12 +20,20 @@ DEFAULT_TOKEN_PATH = "token.json"
 
 # Common scopes across services
 GOOGLE_API_SCOPES = [
-    "https://www.googleapis.com/auth/gmail.readonly",
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/gmail.compose",
-    "https://www.googleapis.com/auth/gmail.labels",                           # Read, compose, send and permanently delete all your email from Gmail
+    # Gmail API scopes
+    "https://www.googleapis.com/auth/gmail.readonly",       # Read all Gmail messages
+    "https://www.googleapis.com/auth/gmail.send",           # Send emails through Gmail
+    "https://www.googleapis.com/auth/gmail.compose",        # Create and draft emails
+    "https://www.googleapis.com/auth/gmail.labels",         # Manage Gmail labels
+    
+    # Tasks API scopes
     "https://www.googleapis.com/auth/tasks",                # Create, edit, organize and delete all your tasks
     "https://www.googleapis.com/auth/tasks.readonly",       # View your tasks
+    
+    # Calendar API scopes
+    "https://www.googleapis.com/auth/calendar",             # Read/write access to Calendars
+    "https://www.googleapis.com/auth/calendar.events",      # Read/write access to Calendar events
+    "https://www.googleapis.com/auth/calendar.readonly",    # Read-only access to Calendars
 ]
 
 

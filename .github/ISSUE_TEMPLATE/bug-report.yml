@@ -1,0 +1,126 @@
+---
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please provide as much detail as possible to help us reproduce and fix the issue.
+
+  - type: checkboxes
+    attributes:
+      label: Prerequisites
+      description: Please check these items before submitting a bug report
+      options:
+        - label: I have checked the [documentation](https://github.com/yourusername/mist/blob/main/README.md) and still encountered this issue
+          required: true
+        - label: I have checked the [troubleshooting guide](https://github.com/yourusername/mist/blob/main/config_docs/troubleshooting_guide.md) and couldn't resolve this issue
+          required: true
+        - label: I have searched existing issues to make sure this is not a duplicate
+          required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of MIST is affected by this issue?
+      options:
+        - Notes Management
+        - Gmail Integration
+        - Calendar Integration
+        - Tasks Integration
+        - MCP Server Core
+        - Google Authentication
+        - AI Assistant Integration
+        - Installation/Setup
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: A clear and concise description of the bug
+      placeholder: When using MIST, I encountered an error when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Configure MIST with '...'
+        2. Run the server with '...'
+        3. Try to access '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen
+      placeholder: I expected MIST to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Instead, MIST...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output or error messages. This will be automatically formatted as code.
+      render: shell
+
+  - type: input
+    id: mist-version
+    attributes:
+      label: MIST Version
+      description: What version of MIST are you running?
+      placeholder: v0.0.5
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: What version of Python are you using?
+      placeholder: 3.13.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Other)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here (e.g., specific AI assistant used, custom configuration, etc.)

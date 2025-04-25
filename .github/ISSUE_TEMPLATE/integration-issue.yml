@@ -1,0 +1,118 @@
+---
+name: Integration Issue
+description: Report issues with integrating MIST with AI assistants
+title: "[INTEGRATION] "
+labels: ["integration"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an integration issue with MIST!
+        Please provide details to help us understand and resolve the problem.
+
+  - type: dropdown
+    id: integration-type
+    attributes:
+      label: Integration Type
+      description: Which AI assistant or integration are you using?
+      options:
+        - Claude Desktop
+        - Zed Editor
+        - Other MCP-compatible client (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Integration Configuration
+      description: Please provide your integration configuration (redact sensitive information)
+      placeholder: |
+        ```json
+        {
+          "mcpServers": {
+            "M.I.S.T.": {
+              "command": "uv",
+              "args": [
+                "run",
+                "--with",
+                "mcp[cli]",
+                // ... other configuration
+              ],
+              "env": {
+                // ... environment variables
+              }
+            }
+          }
+        }
+        ```
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Describe the integration issue you're experiencing
+      placeholder: When trying to connect MIST with Claude Desktop, I encounter...
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-messages
+    attributes:
+      label: Error Messages
+      description: Paste any error messages you're seeing (from MIST logs or AI assistant)
+      render: shell
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Configure MIST with '...'
+        2. Run the server with '...'
+        3. Try to connect with Claude Desktop
+        4. See error
+    validations:
+      required: true
+
+  - type: input
+    id: mist-version
+    attributes:
+      label: MIST Version
+      description: What version of MIST are you running?
+      placeholder: v0.0.5
+    validations:
+      required: true
+
+  - type: input
+    id: client-version
+    attributes:
+      label: AI Assistant/Client Version
+      description: Version of Claude Desktop, Zed, or other client you're using
+      placeholder: Claude Desktop v1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Other)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the integration issue here

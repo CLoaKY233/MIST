@@ -4,7 +4,7 @@ from tools.note_tools import register_tools_note
 from tools.gmail_tools import register_tools_mail
 from tools.tasks_tools import register_tools_tasks
 from tools.calendar_tools import register_tools_calendar
-# from tools.notion_tools import register_tools_notion
+
 
 # Create an MCP server
 mcp = FastMCP(
@@ -16,4 +16,3 @@ register_tools_note(mcp)
 register_tools_mail(mcp)
 register_tools_tasks(mcp)
 register_tools_calendar(mcp)
-# register_tools_notion(mcp)

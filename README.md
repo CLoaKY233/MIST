@@ -33,9 +33,26 @@ MCP works as a communication bridge between AI models and external tools through
 - Mark messages as read/unread or important
 - Batch operations for multiple messages
 
+### Tasks Integration
+
+- List all your task lists
+- Create, update and delete task lists
+- Add tasks with titles, notes and due dates
+- Mark tasks as complete
+- Delete tasks when no longer needed
+
+### Calendar Integration
+
+- List all available calendars
+- Create new calendar events
+- Update existing events
+- Delete events
+- Search for events by keyword
+- View detailed event information
+
 ## How MIST Works
 
-MIST operates as an MCP server that connects AI assistants to note management and Gmail services. When an AI assistant receives a user request requiring access to notes or emails, it communicates with MIST using the MCP protocol. MIST then handles the authentication, data retrieval, and actions with the appropriate services, returning structured data back to the AI assistant.
+MIST operates as an MCP server that connects AI assistants to note management, Gmail, Calendar, and Tasks services. When an AI assistant receives a user request requiring access to notes, emails, events, or tasks, it communicates with MIST using the MCP protocol. MIST then handles the authentication, data retrieval, and actions with the appropriate services, returning structured data back to the AI assistant.
 
 ```mermaid
 flowchart TB
@@ -46,16 +63,24 @@ flowchart TB
         Router[MCP Request Router]
         NoteMgr[Note Manager]
         GmailMgr[Gmail Manager]
+        TasksMgr[Tasks Manager]
+        CalendarMgr[Calendar Manager]
         Auth[Authentication]
     end
 
     MIST --> Router
     Router -->|Note requests| NoteMgr
     Router -->|Gmail requests| GmailMgr
+    Router -->|Tasks requests| TasksMgr
+    Router -->|Calendar requests| CalendarMgr
     GmailMgr -->|Auth requests| Auth
+    TasksMgr -->|Auth requests| Auth
+    CalendarMgr -->|Auth requests| Auth
 
     NoteMgr -->|Store/Retrieve| NoteDB[(Note Database)]
     GmailMgr -->|API Calls| Gmail[(Gmail API)]
+    TasksMgr -->|API Calls| Tasks[(Tasks API)]
+    CalendarMgr -->|API Calls| Calendar[(Calendar API)]
 
     MIST -->|Returns response| AI
     AI -->|Presents result| User
@@ -85,13 +110,29 @@ sequenceDiagram
     Services->>MIST: Confirmation
     MIST->>AI: Success Response
     AI->>User: "Notes saved successfully"
+    
+    User->>AI: "Schedule a meeting tomorrow"
+    AI->>MIST: MCP Request (action: createEvent)
+    MIST->>Services: Create Calendar Event
+    Services->>MIST: Event Details
+    MIST->>AI: Structured Response
+    AI->>User: "Meeting scheduled for tomorrow"
+    
+    User->>AI: "Create a task to follow up"
+    AI->>MIST: MCP Request (action: createTask)
+    MIST->>Services: Create Task
+    Services->>MIST: Task Details
+    MIST->>AI: Structured Response
+    AI->>User: "Follow-up task created"
 ```
 
 ## Use Cases
 
 - **Personal Knowledge Management**: Create, organize and retrieve notes for projects, research, or daily work
 - **Email Management**: Search through emails, draft responses, and manage your inbox without switching contexts
-- **Executive Assistant**: Have AI help manage communications and information across multiple systems
+- **Calendar Organization**: Schedule meetings, check your availability, and manage events
+- **Task Management**: Create and track tasks, organize them into lists, and mark them as complete
+- **Executive Assistant**: Have AI help manage communications, schedules and information across multiple systems
 - **Research Assistant**: Collect, organize, and retrieve information from various sources
 - **Customer Support**: Access email history and draft responses to customer inquiries
 - **Content Creation**: Store ideas, outlines, and drafts as you work with AI on content projects

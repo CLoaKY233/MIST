@@ -1,0 +1,106 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for MIST
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # MIST Feature Request
+        Thank you for suggesting an enhancement for MIST! Please provide as much detail as possible about your idea.
+        
+  - type: checkboxes
+    id: preliminary-checks
+    attributes:
+      label: Before submitting
+      description: Please confirm you've completed the following steps.
+      options:
+        - label: I have searched for [existing feature requests](https://github.com/yourusername/mist/issues) that are similar to mine, and found none.
+          required: true
+        - label: I have read the documentation to confirm this feature doesn't already exist.
+          required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which component would this feature enhance?
+      description: Which part of MIST would this feature be related to?
+      options:
+        - Notes Management
+        - Gmail Integration
+        - Calendar Integration
+        - Tasks Integration
+        - MCP Server Core
+        - Authentication
+        - Configuration
+        - Installation
+        - Documentation
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Problem Statement
+      description: Describe the problem this feature would solve or the user need it addresses.
+      placeholder: When using MIST, I find it difficult to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution-description
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented. Be as specific as possible.
+      placeholder: I would like MIST to provide a way to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: I've also thought about solving this by...
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: Implementation Ideas
+      description: If you have specific technical ideas about how this could be implemented, share them here.
+      placeholder: This could potentially be implemented by...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: willing-to-implement
+    attributes:
+      label: Implementation Contribution
+      description: Would you be willing to help implement this feature?
+      options:
+        - Yes, I'd be willing to submit a PR for this feature
+        - I might be able to help with parts of the implementation
+        - I can't help with the implementation, but can provide feedback
+        - No, I'd need someone else to implement this
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, sketches, or examples about the feature request here.
+      placeholder: Here are some examples of similar features in other applications...
+    validations:
+      required: false
+
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: Success Criteria
+      description: How would you determine if this feature was successfully implemented?
+      placeholder: This feature would be successful if users could...
+    validations:
+      required: false

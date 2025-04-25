@@ -1,11 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: MIST Documentation
-    url: https://github.com/cloaky233/mist/blob/main/README.md
-    about: Check the documentation before opening an issue
-  - name: MIST Discussion Forum
-    url: https://github.com/cloaky233/mist/discussions
-    about: Ask questions and discuss with other community members
-  - name: MIST Troubleshooting Guide
-    url: https://github.com/cloaky233/mist/blob/main/config_docs/troubleshooting_guide.md
-    about: Check common troubleshooting steps before reporting an issue
+    url: https://github.com/yourusername/mist/blob/main/README.md
+    about: Check the documentation for answers to common questions
+  - name: Troubleshooting Guide
+    url: https://github.com/yourusername/mist/blob/main/config_docs/troubleshooting_guide.md
+    about: Our troubleshooting guide may already have a solution to your problem

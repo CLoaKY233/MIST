@@ -49,6 +49,33 @@ By implementing the Model Context Protocol (MCP), MIST enables AI assistants to 
 - Delete completed tasks
 - Organize tasks into different lists
 
+## Future Roadmap
+
+MIST is continuously evolving to offer more integrations and features. Here's what we're planning to add:
+
+### Document & File Management
+- **Google Drive Integration**: Access and manage files, search documents, and analyze content
+- **Google Sheets Integration**: Create, read, and update spreadsheets for data analysis
+
+### Search & Information Access
+- **Google Custom Search**: Enable web search capabilities for research and information retrieval
+- **Knowledge Base**: Build local repositories of information for offline access
+
+### Collaboration Tools
+- **Google Classroom**: Access courses, assignments, and educational materials
+- **Google Chat**: Interact with chat spaces and messages for team collaboration
+
+### Data & Location Services
+- **Google Forms**: Create and manage forms for data collection
+- **Google Maps**: Add location-based services including geocoding and directions
+
+### Platform Improvements
+- **Enhanced Caching**: Improve performance for frequently accessed data
+- **Multi-User Support**: Add user profiles and permission management
+- **Expanded AI Assistant Compatibility**: Support more AI assistants and models
+
+We welcome contributions in any of these areas! Check our [Contributing Guidelines](CONTRIBUTING.md) for more information on how to get involved.
+
 ## System Architecture
 
 MIST operates as an MCP server that connects AI assistants to various services. It handles authentication, data retrieval, and actions with the appropriate services, returning structured data back to the AI assistant.
@@ -122,7 +149,7 @@ sequenceDiagram
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/yourusername/mist.git
+   git clone https://github.com/cloaky233/mist.git
    cd mist
    ```
 

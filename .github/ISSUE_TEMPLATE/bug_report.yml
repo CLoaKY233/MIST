@@ -1,0 +1,131 @@
+name: Bug Report
+description: Report a bug in MIST
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # MIST Bug Report
+        Thank you for taking the time to file a bug report! Please fill out this form as completely as possible.
+        
+  - type: checkboxes
+    id: preliminary-checks
+    attributes:
+      label: Before submitting
+      description: Please confirm you've completed the following steps.
+      options:
+        - label: I have searched for [existing issues](https://github.com/yourusername/mist/issues) that already report this problem, and found none.
+          required: true
+        - label: I have checked the [troubleshooting guide](../../config_docs/troubleshooting_guide.md) and followed the steps there.
+          required: true
+        - label: I am running the latest version of MIST.
+          required: true
+
+  - type: input
+    id: mist-version
+    attributes:
+      label: MIST version
+      description: What version of MIST are you using?
+      placeholder: e.g., 0.0.5
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (Fedora/RHEL)
+        - Linux (Other)
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: What version of Python are you using?
+      placeholder: e.g., Python 3.13.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which component is affected?
+      description: Which part of MIST has the bug?
+      options:
+        - Notes Management
+        - Gmail Integration
+        - Calendar Integration
+        - Tasks Integration
+        - MCP Server Core
+        - Authentication
+        - Configuration
+        - Installation
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Provide a clear and concise description of the bug.
+      placeholder: I encountered an error when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+      placeholder: I expected MIST to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide detailed steps to reproduce the bug.
+      value: |
+        1. Configure MIST with...
+        2. Run the server with...
+        3. Execute the following action...
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false
+      
+  - type: textarea
+    id: environment
+    attributes:
+      label: Additional environment details
+      description: Any other relevant environment details, such as virtual environments, package versions, etc.
+      placeholder: I'm using uv 0.1.25 with mcp[cli] 1.6.0...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+      placeholder: This only happens when...
+    validations:
+      required: false

@@ -1,58 +1,57 @@
 # MIST - Model Intelligence System for Tasks
 
 ![MIST Banner](icon.jpg)
-MIST is a comprehensive MCP (Model Context Protocol) server that empowers AI assistants with real-world capabilities for note-taking and Gmail integration. It bridges the gap between AI assistants and external tools, allowing them to save, edit, create, and delete notes, as well as access and interact with Gmail, including reading messages, searching emails, and sending new messages.
 
-## What is MCP (Model Context Protocol)?
+MIST is a comprehensive MCP (Model Context Protocol) server that empowers AI assistants with real-world capabilities for note management, Gmail, Calendar, and Tasks integration. It bridges the gap between AI assistants and external tools, enabling them to interact with your data and services through a standardized protocol.
 
-Model Context Protocol (MCP) is an open standard that enables AI assistants to interact with external tools, services, and data sources. Unlike traditional AI that can only respond based on pre-trained knowledge, MCP allows AI models to:
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 
-- **Access real-time information** from various sources
-- **Perform actions** in external systems and applications
-- **Maintain context and state** across interactions
-- **Expand capabilities** through standardized tool integration
+## Overview
 
-MCP works as a communication bridge between AI models and external tools through a structured protocol, allowing seamless integration of new capabilities without requiring changes to the AI model itself. By implementing MCP servers like MIST, developers can extend AI capabilities to interact with specific applications and services.
+MIST allows AI assistants to:
 
-## Features
+- **Manage notes**: Create, edit, search, and organize notes with persistent storage
+- **Interact with Gmail**: Search emails, read messages, send emails, manage labels
+- **Manage calendar events**: View, create, update, and delete Google Calendar events
+- **Organize tasks**: Create task lists, add tasks, mark tasks as complete
+
+By implementing the Model Context Protocol (MCP), MIST enables AI assistants to perform actions in external systems, access real-time information, and maintain context across interactions.
+
+## Key Features
 
 ### Note Management
-
-- Create, read, edit, and delete notes with persistent storage
+- Create and store notes with rich text formatting
 - Search notes by content, tags, or metadata
 - Generate summaries of notes or collections
 - Organize notes by subject, date, or custom categories
-- Support for rich text formatting and attachments
+- Store notes locally in your filesystem
 
 ### Gmail Integration
-
-- Query and search emails with advanced filtering options
-- Read complete email content, including attachments
-- Compose and send emails with formatting and attachments
+- Search emails with advanced filtering options
+- Read complete email content
+- Compose and send emails
 - Manage email labels and organization
-- Mark messages as read/unread or important
+- Mark messages as read/unread
 - Batch operations for multiple messages
 
-### Tasks Integration
-
-- List all your task lists
-- Create, update and delete task lists
-- Add tasks with titles, notes and due dates
-- Mark tasks as complete
-- Delete tasks when no longer needed
-
 ### Calendar Integration
-
 - List all available calendars
-- Create new calendar events
+- Create and manage calendar events
 - Update existing events
-- Delete events
-- Search for events by keyword
+- Search events by keyword or date range
 - View detailed event information
 
-## How MIST Works
+### Tasks Integration
+- List and manage task lists
+- Create tasks with titles, notes, and due dates
+- Mark tasks as complete
+- Delete completed tasks
+- Organize tasks into different lists
 
-MIST operates as an MCP server that connects AI assistants to note management, Gmail, Calendar, and Tasks services. When an AI assistant receives a user request requiring access to notes, emails, events, or tasks, it communicates with MIST using the MCP protocol. MIST then handles the authentication, data retrieval, and actions with the appropriate services, returning structured data back to the AI assistant.
+## System Architecture
+
+MIST operates as an MCP server that connects AI assistants to various services. It handles authentication, data retrieval, and actions with the appropriate services, returning structured data back to the AI assistant.
 
 ```mermaid
 flowchart TB
@@ -77,7 +76,7 @@ flowchart TB
     TasksMgr -->|Auth requests| Auth
     CalendarMgr -->|Auth requests| Auth
 
-    NoteMgr -->|Store/Retrieve| NoteDB[(Note Database)]
+    NoteMgr -->|Store/Retrieve| NoteDB[(Note Storage)]
     GmailMgr -->|API Calls| Gmail[(Gmail API)]
     TasksMgr -->|API Calls| Tasks[(Tasks API)]
     CalendarMgr -->|API Calls| Calendar[(Calendar API)]
@@ -87,8 +86,6 @@ flowchart TB
 ```
 
 ### Communication Flow
-
-The diagram below illustrates how requests flow through the MIST system:
 
 ```mermaid
 sequenceDiagram
@@ -110,32 +107,7 @@ sequenceDiagram
     Services->>MIST: Confirmation
     MIST->>AI: Success Response
     AI->>User: "Notes saved successfully"
-    
-    User->>AI: "Schedule a meeting tomorrow"
-    AI->>MIST: MCP Request (action: createEvent)
-    MIST->>Services: Create Calendar Event
-    Services->>MIST: Event Details
-    MIST->>AI: Structured Response
-    AI->>User: "Meeting scheduled for tomorrow"
-    
-    User->>AI: "Create a task to follow up"
-    AI->>MIST: MCP Request (action: createTask)
-    MIST->>Services: Create Task
-    Services->>MIST: Task Details
-    MIST->>AI: Structured Response
-    AI->>User: "Follow-up task created"
 ```
-
-## Use Cases
-
-- **Personal Knowledge Management**: Create, organize and retrieve notes for projects, research, or daily work
-- **Email Management**: Search through emails, draft responses, and manage your inbox without switching contexts
-- **Calendar Organization**: Schedule meetings, check your availability, and manage events
-- **Task Management**: Create and track tasks, organize them into lists, and mark them as complete
-- **Executive Assistant**: Have AI help manage communications, schedules and information across multiple systems
-- **Research Assistant**: Collect, organize, and retrieve information from various sources
-- **Customer Support**: Access email history and draft responses to customer inquiries
-- **Content Creation**: Store ideas, outlines, and drafts as you work with AI on content projects
 
 ## Installation
 
@@ -143,135 +115,120 @@ sequenceDiagram
 
 - Python 3.13 or newer
 - UV package manager (recommended) or pip
-- Google account (for Gmail integration)
+- Google account (for Gmail/Calendar/Tasks integration)
 
 ### Setup
 
 1. Clone this repository:
 
-   ```
+   ```bash
    git clone https://github.com/yourusername/mist.git
    cd mist
    ```
 
-2. Install dependencies using UV (recommended):
+2. Install dependencies:
 
-   ```
+   **With UV (recommended)**:
+   ```bash
    uv install
    ```
 
-   Or with pip:
-
-   ```
+   **With pip**:
+   ```bash
    pip install -e .
    ```
 
 3. Configure your environment:
 
-   ```
+   ```bash
    cp .env.example .env
    ```
 
-   Edit the `.env` file to set your preferred storage locations and options.
+   Edit the `.env` file to set your configuration options.
 
-## Gmail API Configuration
+### Environment Configuration
+
+The following environment variables can be set in your `.env` file:
+
+```env
+# Notes storage configuration
+MIST_NOTES_DIR=/path/to/notes/directory
+
+# Google API configuration
+MIST_GOOGLE_CREDENTIALS_PATH=./credentials.json
+MIST_GOOGLE_TOKEN_PATH=./token.json
+```
+
+## Google API Configuration
+
+### Setting up Gmail, Calendar, and Tasks APIs
 
 ```mermaid
 flowchart TD
     A[Start] --> B[Create Google Cloud Project]
-    B --> C[Enable Gmail API]
+    B --> C[Enable Required APIs]
     C --> D[Configure OAuth Consent Screen]
     D --> E[Create OAuth Credentials]
     E --> F[Download credentials.json]
     F --> G[Run MIST First Time]
     G --> H[Complete OAuth Flow]
     H --> I[OAuth Token Saved]
-    I --> J[MIST Ready for Gmail Integration]
+    I --> J[MIST Ready for Google Integration]
 ```
-
-### Detailed Google Cloud Setup
 
 1. **Create a Google Cloud Project**
 
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Click on the project dropdown at the top of the page
-   - Click "New Project"
-   - Enter a project name (e.g., "MCP Gmail Integration")
-   - Click "Create"
-   - Wait for the project to be created and select it from the dropdown
+   - Navigate to the [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Give it a descriptive name (e.g., "MIST Integration")
 
-2. **Enable the Gmail API**
+2. **Enable Required APIs**
 
-   - In your Google Cloud project, go to the navigation menu (≡)
-   - Select "APIs & Services" > "Library"
-   - Search for "Gmail API"
-   - Click on the Gmail API card
-   - Click "Enable"
+   - Go to "APIs & Services" > "Library"
+   - Search for and enable:
+     - Gmail API
+     - Calendar API
+     - Tasks API
 
 3. **Configure OAuth Consent Screen**
 
    - Go to "APIs & Services" > "OAuth consent screen"
-   - Select "External" user type (unless you have a Google Workspace organization)
-   - Fill in the required application information:
-     - App name: "MCP Gmail Integration"
+   - Select "External" user type (or "Internal" for Google Workspace)
+   - Fill in required information:
+     - App name: "MIST Integration"
      - User support email: Your email address
      - Developer contact information: Your email address
    - Click "Save and Continue"
-   - Add scopes: Add the necessary Gmail scopes (gmail.readonly, gmail.send, gmail.compose, gmail.labels)
-   - Click "Save and Continue"
-   - Add test users: Add your Google email address
-   - Click "Save and Continue"
+   - Add necessary scopes for each API
+   - Add your Google account as a test user
 
 4. **Create OAuth Credentials**
+
    - Go to "APIs & Services" > "Credentials"
    - Click "Create Credentials" > "OAuth client ID"
-   - Choose "Desktop app" as the application type
-   - Enter a name (e.g., "MCP Gmail Desktop Client")
-   - Click "Create"
-   - Download the JSON file and save it as `credentials.json` in your project root directory
+   - Select "Desktop application" as the application type
+   - Enter a name (e.g., "MIST Desktop Client")
+   - Download the JSON file and save it as `credentials.json` in your project directory
+
+
 
 ## Usage
 
-### Notes Workflow
-
-```mermaid
-flowchart LR
-    Create[Create Note] --> Store[(Store in Database)]
-    Search[Search Notes] --> Query[(Query Database)]
-    Query --> Results[Return Results]
-    Edit[Edit Note] --> Update[(Update in Database)]
-    Delete[Delete Note] --> Remove[(Remove from Database)]
-    Summarize[Summarize Notes] --> Retrieve[(Retrieve Notes)]
-    Retrieve --> Process[Process Content]
-    Process --> Summary[Generate Summary]
-```
-
-### Gmail Workflow
-
-```mermaid
-flowchart LR
-    Search[Search Emails] --> Query[(Query Gmail API)]
-    Query --> Results[Return Results]
-    Read[Read Email] --> Fetch[(Fetch from Gmail)]
-    Fetch --> Display[Parse & Display]
-    Compose[Compose Email] --> Draft[(Create Draft)]
-    Draft --> Send[Send Email]
-    Labels[Manage Labels] --> Update[(Update via API)]
-```
-
 ### Running the MCP Server
 
-Start the MCP server:
+Start the MCP server with:
 
-```
+```bash
 uv run --with mcp[cli] --with-editable . mcp run mist/server.py
 ```
+
+For production use, you may want to use a process manager like `systemd`, `supervisor`, or `pm2`.
 
 ### Connecting to AI Assistants
 
 #### Claude Desktop
 
-Add the following configuration to your Claude Desktop settings:
+Add the following to your Claude Desktop settings:
 
 ```json
 {
@@ -283,15 +240,15 @@ Add the following configuration to your Claude Desktop settings:
         "--with",
         "mcp[cli]",
         "--with-editable",
-        "<path-to-mist-directory>",
+        "/path/to/mist",
         "mcp",
         "run",
-        "<path-to-mist-directory>/server.py"
+        "/path/to/mist/server.py"
       ],
       "env": {
-        "MCP_GMAIL_CREDENTIALS_PATH": "<path-to-mist-directory>/credentials.json",
-        "MCP_GMAIL_TOKEN_PATH": "<path-to-mist-directory>/token.json",
-        "MCP_NOTES_DIRECTORY": "<path-to-notes-directory>"
+        "MIST_GOOGLE_CREDENTIALS_PATH": "/path/to/mist/credentials.json",
+        "MIST_GOOGLE_TOKEN_PATH": "/path/to/mist/token.json",
+        "MIST_NOTES_DIR": "/path/to/notes"
       }
     }
   }
@@ -300,7 +257,7 @@ Add the following configuration to your Claude Desktop settings:
 
 #### Zed Editor
 
-Add the following configuration to your Zed editor settings:
+Add the following to your Zed editor settings:
 
 ```json
 "context_servers": {
@@ -312,15 +269,15 @@ Add the following configuration to your Zed editor settings:
         "--with",
         "mcp[cli]",
         "--with-editable",
-        "<path-to-mist-directory>",
+        "/path/to/mist",
         "mcp",
         "run",
-        "<path-to-mist-directory>/server.py"
+        "/path/to/mist/server.py"
       ],
       "env": {
-        "MCP_GMAIL_CREDENTIALS_PATH": "<path-to-mist-directory>/credentials.json",
-        "MCP_GMAIL_TOKEN_PATH": "<path-to-mist-directory>/token.json",
-        "MCP_NOTES_DIRECTORY": "<path-to-notes-directory>"
+        "MIST_GOOGLE_CREDENTIALS_PATH": "/path/to/mist/credentials.json",
+        "MIST_GOOGLE_TOKEN_PATH": "/path/to/mist/token.json",
+        "MIST_NOTES_DIR": "/path/to/notes"
       }
     },
     "settings": {
@@ -330,77 +287,122 @@ Add the following configuration to your Zed editor settings:
 }
 ```
 
-### First Run
+### First Run Authentication
 
-When you first run the server, it will prompt you to authenticate with Gmail. Follow the instructions in the terminal to complete the authentication process:
+When you first run the server, you'll need to authenticate with Google:
 
 1. A browser window will open with Google's authentication page
 2. Sign in with your Google account
 3. Grant the requested permissions
-4. The authorization code will be captured automatically, or you'll be instructed to paste it back into the terminal
+4. The authorization code will be captured automatically
 5. MIST will save the authentication token for future use
+
+## API Reference
+
+### Note Management API
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `add_note` | Create a new note | `title`, `content`, `subject` (optional) |
+| `read_note` | Read a note by ID or title | `note_id` or `title` |
+| `list_notes` | List notes with filters | `subject`, `tag`, `limit` |
+| `search_notes` | Search notes by content | `query` |
+| `edit_note` | Update an existing note | `note_id`, `new_content` |
+| `delete_note` | Delete a note | `note_id` |
+
+### Gmail API
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `search_emails` | Find emails by criteria | Various filters |
+| `get_emails` | Get email content by IDs | `message_ids` |
+| `send_email` | Send a new email | `to`, `subject`, `body`, etc. |
+| `list_available_labels` | Get Gmail labels | None |
+
+### Calendar API
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `list_calendars_tool` | List all calendars | None |
+| `create_event_tool` | Create a calendar event | `calendar_id`, `title`, etc. |
+| `search_events_tool` | Search calendar events | `calendar_id`, `query`, etc. |
+
+### Tasks API
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `list_task_lists_tool` | List all task lists | None |
+| `create_task_tool` | Create a new task | `task_list_id`, `title`, etc. |
+| `complete_task_tool` | Mark task as complete | `task_list_id`, `task_id` |
 
 ## Project Structure
 
 ```
 mist/
-├── server.py             # Main MCP server entry point
-├── tools/                # MIST tool implementations
-│   ├── note_tools/       # Note-taking functionality
-│   │   ├── create.py     # Note creation tools
-│   │   ├── read.py       # Note retrieval tools
-│   │   ├── update.py     # Note editing tools
-│   │   ├── delete.py     # Note deletion tools
-│   │   └── search.py     # Note search tools
-│   └── gmail_tools/      # Gmail interaction functionality
-│       ├── auth.py       # Gmail authentication
-│       ├── messages.py   # Email reading/sending
-│       ├── search.py     # Email search
-│       └── labels.py     # Label management
-├── config/               # Configuration files
-│   ├── .env.example      # Example environment variables
-│   └── config.py         # Configuration handling
-├── config_docs/          # Example configuration files
-│   ├── claude_config.json  # Claude Desktop config example
-│   └── zed_config.json     # Zed editor config example
-└── utils/                # Utility functions
-    ├── storage.py        # Storage mechanisms
-    └── logging.py        # Logging functionality
+├── server.py                  # Main MCP server entry point
+├── tools/                     # Tool implementations
+│   ├── note_tools/            # Note management
+│   ├── gmail_tools/           # Gmail integration
+│   ├── calendar_tools/        # Calendar integration
+│   ├── tasks_tools/           # Tasks integration
+│   └── google_api/            # Google API common utilities
+├── config_docs/               # Configuration examples
+└── .env                       # Environment configuration
 ```
+
+## Security Considerations
+
+- API keys and tokens are stored in the `.env` file or environment variables
+- OAuth tokens are securely managed by Google's authentication flow
+- Your data remains on your own device or within your own accounts
+- No data is sent to third-party services unless explicitly configured
 
 ## Troubleshooting
 
-### Common Issues
+### Authentication Issues
 
-#### Authentication Problems
+- **Credentials not working**: Delete `token.json` and re-authenticate
+- **Permission errors**: Check OAuth consent screen for proper scopes
+- **Token expired**: MIST should refresh tokens automatically, but you may need to re-authenticate if refresh fails
 
-- Ensure your `credentials.json` file is correctly placed in the root directory
-- Check that you've granted the necessary permissions during OAuth flow
-- Delete `token.json` and re-authenticate if credentials have expired
+### Connection Problems
 
-#### Connection Issues
+- **AI assistant cannot connect**: Verify paths in configuration are correct
+- **Server fails to start**: Check Python version (3.13+ required)
+- **API errors**: Verify API keys and credentials are correctly set up
 
-- Verify your AI assistant is configured to use the correct MCP server path
-- Check for any firewall or network restrictions
-- Ensure the server is running before attempting to connect
+### Data Issues
 
-#### Gmail API Limitations
+- **Notes not saving**: Check `MIST_NOTES_DIR` path exists and is writable
 
-- Be aware of Gmail API quotas and limits
-- Some operations may require additional scopes or permissions
+## Development
+
+### Linting and Formatting
+
+```bash
+ruff check .
+ruff format .
+```
 
 ## Contributing
 
-Contributions are welcome! To contribute:
+Contributions are welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on how to get started.
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-Please make sure to update tests as appropriate and follow the coding standards of the project.
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and commit them: `git commit -m 'Add amazing feature'`
+4. Push to your branch: `git push origin feature/amazing-feature`
+5. Open a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Model Context Protocol](https://github.com/anthropics/model-context-protocol) for the protocol specification
+- Google APIs for Gmail, Calendar, and Tasks integration
+
+---
+
+Made with ❤️ by CLoaKY

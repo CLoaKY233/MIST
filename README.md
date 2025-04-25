@@ -122,7 +122,7 @@ sequenceDiagram
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/yourusername/mist.git
+   git clone https://github.com/cloaky233/mist.git
    cd mist
    ```
 

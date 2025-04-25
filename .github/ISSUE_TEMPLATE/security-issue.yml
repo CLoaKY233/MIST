@@ -1,0 +1,102 @@
+---
+name: Security Issue
+description: Report a security vulnerability
+title: "[SECURITY] "
+labels: ["security", "sensitive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Security Vulnerability Report
+
+        ⚠️ **IMPORTANT**: If this is a critical security vulnerability that could expose sensitive user data or credentials, please consider reporting it directly to the maintainers rather than creating a public issue.
+
+        For critical vulnerabilities, you can contact the maintainers directly at:
+        - Email: [security@yourdomain.com](mailto:security@yourdomain.com)
+
+        This template is for security issues that can be disclosed publicly.
+
+  - type: dropdown
+    id: vuln-type
+    attributes:
+      label: Vulnerability Type
+      description: What type of security vulnerability are you reporting?
+      options:
+        - Authentication Issue
+        - Authorization/Access Control
+        - Data Exposure
+        - Credentials Management
+        - Cross-Site Scripting (XSS)
+        - Injection Vulnerability
+        - Insecure Configuration
+        - Dependency Vulnerability
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Vulnerability Description
+      description: Describe the security vulnerability in detail
+      placeholder: Explain the vulnerability, including where it exists in the codebase and how it could be exploited.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: Describe the potential impact if this vulnerability were exploited
+      placeholder: What could an attacker accomplish by exploiting this vulnerability?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Please provide steps to reproduce the vulnerability
+      placeholder: |
+        1. Configure MIST with '...'
+        2. Run the server with '...'
+        3. Send a request to '...'
+        4. Observe that '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: If you have suggestions for mitigating this vulnerability, please share them
+      placeholder: This vulnerability could be fixed by...
+
+  - type: input
+    id: mist-version
+    attributes:
+      label: MIST Version
+      description: What version of MIST is affected?
+      placeholder: v0.0.5
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Estimated Severity
+      description: How would you rate the severity of this vulnerability?
+      options:
+        - Critical (Immediate action required)
+        - High (Fix required in next release)
+        - Medium (Should be addressed soon)
+        - Low (Minor concern)
+        - Informational (Best practice suggestion)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any additional information about this security issue

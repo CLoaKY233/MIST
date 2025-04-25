@@ -1,0 +1,69 @@
+---
+name: Documentation Issue
+description: Report issues with documentation
+title: "[DOCS] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to improve our documentation!
+        Please provide details about the documentation issue you found.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: Which type of documentation has the issue?
+      options:
+        - README
+        - API Reference
+        - Configuration Guide
+        - Troubleshooting Guide
+        - Code Comments/Docstrings
+        - Installation Instructions
+        - Example Configurations
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: doc-location
+    attributes:
+      label: Documentation Location
+      description: URL or file path to the documentation with the issue
+      placeholder: https://github.com/yourusername/mist/blob/main/README.md or mist/config_docs/api_reference.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Describe the issue with the documentation
+      placeholder: |
+        The documentation is unclear about...
+        There's an error in the example about...
+        The guide is missing information about...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-changes
+    attributes:
+      label: Suggested Changes
+      description: Please suggest the changes you'd like to see
+      placeholder: |
+        I suggest changing the text from:
+        "..."
+
+        To:
+        "..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any additional context or information about this documentation issue

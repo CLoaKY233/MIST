@@ -377,12 +377,6 @@ mist/
 
 ## Development
 
-### Running Tests
-
-```bash
-pytest tests/
-```
-
 ### Linting and Formatting
 
 ```bash

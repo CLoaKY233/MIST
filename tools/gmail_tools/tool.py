@@ -512,7 +512,6 @@ def get_emails(message_ids: list[str]) -> str:
     return result
 
 
-# Add an __init__.py file to make note_tools a proper package
 def register_tools_mail(mcp):
     """Register all mail tools with the MCP server."""
     mcp.tool()(get_emails)

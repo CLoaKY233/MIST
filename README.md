@@ -15,6 +15,7 @@ MIST allows AI assistants to:
 - **Interact with Gmail**: Search emails, read messages, send emails, manage labels
 - **Manage calendar events**: View, create, update, and delete Google Calendar events
 - **Organize tasks**: Create task lists, add tasks, mark tasks as complete
+- **Work with Git repositories**: Perform Git operations like status, diff, commit, branch management
 
 By implementing the Model Context Protocol (MCP), MIST enables AI assistants to perform actions in external systems, access real-time information, and maintain context across interactions.
 
@@ -48,6 +49,14 @@ By implementing the Model Context Protocol (MCP), MIST enables AI assistants to 
 - Mark tasks as complete
 - Delete completed tasks
 - Organize tasks into different lists
+
+### Git Integration
+- Perform Git operations in local repositories
+- View status, diffs, and commit history
+- Commit changes and manage branches
+- Create, checkout and merge branches
+- Manage remote repositories
+- Display commit details and changes
 
 ## Future Roadmap
 
@@ -91,6 +100,7 @@ flowchart TB
         GmailMgr[Gmail Manager]
         TasksMgr[Tasks Manager]
         CalendarMgr[Calendar Manager]
+        GitMgr[Git Manager]
         Auth[Authentication]
     end
 
@@ -99,6 +109,7 @@ flowchart TB
     Router -->|Gmail requests| GmailMgr
     Router -->|Tasks requests| TasksMgr
     Router -->|Calendar requests| CalendarMgr
+    Router -->|Git requests| GitMgr
     GmailMgr -->|Auth requests| Auth
     TasksMgr -->|Auth requests| Auth
     CalendarMgr -->|Auth requests| Auth
@@ -107,6 +118,7 @@ flowchart TB
     GmailMgr -->|API Calls| Gmail[(Gmail API)]
     TasksMgr -->|API Calls| Tasks[(Tasks API)]
     CalendarMgr -->|API Calls| Calendar[(Calendar API)]
+    GitMgr -->|Git Operations| GitRepos[(Git Repositories)]
 
     MIST -->|Returns response| AI
     AI -->|Presents result| User
@@ -362,6 +374,20 @@ When you first run the server, you'll need to authenticate with Google:
 | `create_task_tool` | Create a new task | `task_list_id`, `title`, etc. |
 | `complete_task_tool` | Mark task as complete | `task_list_id`, `task_id` |
 
+### Git API
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `status_tool` | Show working tree status | `repo_path` |
+| `diff_unstaged_tool` | Show unstaged changes | `repo_path` |
+| `diff_staged_tool` | Show staged changes | `repo_path` |
+| `add_tool` | Stage files for commit | `repo_path`, `files` |
+| `commit_tool` | Commit staged changes | `repo_path`, `message` |
+| `log_tool` | Show commit history | `repo_path`, `max_count` |
+| `branch_list_tool` | List all branches | `repo_path` |
+| `create_branch_tool` | Create a new branch | `repo_path`, `branch_name`, `base_branch` |
+| `checkout_tool` | Switch branches | `repo_path`, `branch_name` |
+
 ## Project Structure
 
 ```
@@ -372,6 +398,7 @@ mist/
 │   ├── gmail_tools/           # Gmail integration
 │   ├── calendar_tools/        # Calendar integration
 │   ├── tasks_tools/           # Tasks integration
+│   ├── git_tools/             # Git operations
 │   └── google_api/            # Google API common utilities
 ├── config_docs/               # Configuration examples
 └── .env                       # Environment configuration

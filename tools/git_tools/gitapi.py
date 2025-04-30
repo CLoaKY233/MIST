@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any, Union
 import git
 import os
+
 from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
 def get_repo(repo_path: str) -> git.Repo:
@@ -242,7 +243,14 @@ def git_show(repo: git.Repo, revision: str) -> str:
 
     for d in diff:
         output.append(f"\n--- {d.a_path}\n+++ {d.b_path}\n")
-        output.append(d.diff.decode('utf-8'))
+        # Handle different possible types of d.diff
+        if d.diff is None:
+            output.append("(No diff available)")
+        elif isinstance(d.diff, bytes):
+            output.append(d.diff.decode('utf-8'))
+        else:
+            # Already a string or another type that can be converted to string
+            output.append(str(d.diff))
 
     return "".join(output)
 

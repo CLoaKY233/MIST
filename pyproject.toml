@@ -13,3 +13,6 @@ dependencies = [
     "pydantic>=2.11.3",
     "pytest>=8.3.5",
 ]
+
+[tool.setuptools]
+packages = ["tools"]

@@ -4,7 +4,7 @@ notes
 credentials.json
 temp.json
 token.json
-
+pyrightconfig.json
 **/__pycache__
 .ruff_cache
 # Byte-compiled / optimized / DLL files

@@ -12,6 +12,7 @@ dependencies = [
     "nest-asyncio>=1.6.0",
     "pydantic>=2.11.3",
     "pytest>=8.3.5",
+    "gitpython>=3.1.41",
 ]
 
 [tool.setuptools]

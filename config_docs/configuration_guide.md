@@ -20,8 +20,7 @@ MIST uses environment variables for configuration. These can be set in a `.env` 
 | `MIST_GOOGLE_CREDENTIALS_PATH` | Path to Google API credentials JSON file | `./credentials.json` | Yes for Google integration |
 | `MIST_GOOGLE_TOKEN_PATH` | Path where OAuth token will be stored | `./token.json` | Yes for Google integration |
 | `MIST_GOOGLE_SCOPES` | Comma-separated list of OAuth scopes | All required scopes | No |
-
-
+| `MIST_GOOGLE_USER_ID` | User ID for Google APIs | `me` | No |
 
 ## Example Configuration
 
@@ -35,6 +34,9 @@ MIST_NOTES_FORMAT=md
 # Google API configuration
 MIST_GOOGLE_CREDENTIALS_PATH=./credentials.json
 MIST_GOOGLE_TOKEN_PATH=./token.json
+
+# Debugging options
+MIST_LOG_LEVEL=INFO
 ```
 
 ## AI Assistant Configuration
@@ -120,6 +122,16 @@ On Linux and macOS, use standard path format:
 MIST_NOTES_DIR=/home/username/notes
 ```
 
+## Notes Configuration
+
+The `MIST_NOTES_DIR` environment variable specifies where MIST will store and manage notes. This directory must exist and be writable by the MIST process.
+
+MIST organizes notes with the following structure:
+- Each note is a separate markdown file with a `.md` extension
+- Notes have metadata such as creation date, tags, and subject
+- An index file (`index.json`) tracks all notes and their metadata
+- A separate tags file (`tags.json`) maintains tag-based organization
+
 ## OAuth Scopes
 
 MIST requests the following OAuth scopes by default:
@@ -132,16 +144,35 @@ MIST requests the following OAuth scopes by default:
 
 If you need to customize these scopes, you can set the `MIST_GOOGLE_SCOPES` environment variable with a comma-separated list of scopes.
 
+## Git Configuration
+
+MIST's Git integration operates on local Git repositories. When using Git tools, you need to provide the `repo_path` parameter pointing to a valid Git repository on your file system. This repository must be:
+
+1. Already initialized with Git
+2. Accessible and writable by the MIST process
+3. Specified with a full path (relative or absolute)
+
+Example Git repository path:
+```
+repo_path="C:/Users/username/projects/my-project"
+```
+
 ## Security Considerations
 
 1. **API Keys and Tokens**:
    - Keep your `.env` file secure and never commit it to version control
    - Consider using environment variables instead of the `.env` file in production
+   - The included `credentials.json` should be replaced with your own from Google Cloud Console
 
 2. **OAuth Security**:
    - The `token.json` file contains sensitive OAuth credentials
    - Ensure it has appropriate file permissions (readable only by the user running MIST)
    - If your token may be compromised, revoke it in the Google Cloud Console and re-authenticate
+
+3. **Git Security**:
+   - The Git tools operate on local repositories only
+   - Be careful when using push/pull operations as they may require additional authentication
+   - Consider using SSH keys or credential helpers for secure Git operations
 
 ## Advanced Configuration
 
@@ -185,3 +216,10 @@ MIST_LOG_LEVEL=DEBUG
 - Verify your Google Cloud project has the correct APIs enabled
 - Check that your OAuth consent screen is properly configured
 - Ensure your credentials.json file is valid and contains the correct client ID and secret
+
+### Git Integration Issues
+
+- Verify the repository path exists and is a valid Git repository
+- Check that Git is properly installed and available on your system
+- Ensure proper permissions for the Git repository
+- For authentication issues with remote repositories, check your Git credentials

@@ -2,10 +2,11 @@
 
 ![MIST Banner](icon.jpg)
 
-MIST is a comprehensive MCP (Model Context Protocol) server that empowers AI assistants with real-world capabilities for note management, Gmail, Calendar, and Tasks integration. It bridges the gap between AI assistants and external tools, enabling them to interact with your data and services through a standardized protocol.
+MIST is a comprehensive MCP (Model Context Protocol) server that empowers AI assistants with real-world capabilities for note management, Gmail, Calendar, Tasks, and Git integration. It bridges the gap between AI assistants and external tools, enabling them to interact with your data and services through a standardized protocol.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![Version](https://img.shields.io/badge/version-0.1.1-green.svg)](https://github.com/cloaky233/mist)
 
 ## Overview
 
@@ -15,6 +16,7 @@ MIST allows AI assistants to:
 - **Interact with Gmail**: Search emails, read messages, send emails, manage labels
 - **Manage calendar events**: View, create, update, and delete Google Calendar events
 - **Organize tasks**: Create task lists, add tasks, mark tasks as complete
+- **Work with Git repositories**: Perform Git operations like status, diff, commit, branch management
 
 By implementing the Model Context Protocol (MCP), MIST enables AI assistants to perform actions in external systems, access real-time information, and maintain context across interactions.
 
@@ -48,6 +50,14 @@ By implementing the Model Context Protocol (MCP), MIST enables AI assistants to 
 - Mark tasks as complete
 - Delete completed tasks
 - Organize tasks into different lists
+
+### Git Integration
+- Perform Git operations in local repositories
+- View status, diffs, and commit history
+- Commit changes and manage branches
+- Create, checkout and merge branches
+- Manage remote repositories
+- Display commit details and changes
 
 ## Future Roadmap
 
@@ -91,6 +101,7 @@ flowchart TB
         GmailMgr[Gmail Manager]
         TasksMgr[Tasks Manager]
         CalendarMgr[Calendar Manager]
+        GitMgr[Git Manager]
         Auth[Authentication]
     end
 
@@ -99,6 +110,7 @@ flowchart TB
     Router -->|Gmail requests| GmailMgr
     Router -->|Tasks requests| TasksMgr
     Router -->|Calendar requests| CalendarMgr
+    Router -->|Git requests| GitMgr
     GmailMgr -->|Auth requests| Auth
     TasksMgr -->|Auth requests| Auth
     CalendarMgr -->|Auth requests| Auth
@@ -107,6 +119,7 @@ flowchart TB
     GmailMgr -->|API Calls| Gmail[(Gmail API)]
     TasksMgr -->|API Calls| Tasks[(Tasks API)]
     CalendarMgr -->|API Calls| Calendar[(Calendar API)]
+    GitMgr -->|Git Operations| GitRepos[(Git Repositories)]
 
     MIST -->|Returns response| AI
     AI -->|Presents result| User
@@ -143,6 +156,7 @@ sequenceDiagram
 - Python 3.13 or newer
 - UV package manager (recommended) or pip
 - Google account (for Gmail/Calendar/Tasks integration)
+- Git (for Git integration features)
 
 ### Setup
 
@@ -168,10 +182,13 @@ sequenceDiagram
 3. Configure your environment:
 
    ```bash
-   cp .env.example .env
+   # Create a .env file with your configuration
+   echo "MIST_NOTES_DIR=/path/to/your/notes/directory" > .env
+   echo "MIST_GOOGLE_CREDENTIALS_PATH=./credentials.json" >> .env
+   echo "MIST_GOOGLE_TOKEN_PATH=./token.json" >> .env
    ```
 
-   Edit the `.env` file to set your configuration options.
+   Edit the `.env` file to set the correct paths for your environment.
 
 ### Environment Configuration
 
@@ -362,19 +379,69 @@ When you first run the server, you'll need to authenticate with Google:
 | `create_task_tool` | Create a new task | `task_list_id`, `title`, etc. |
 | `complete_task_tool` | Mark task as complete | `task_list_id`, `task_id` |
 
+### Git API
+
+| Function | Description | Parameters |
+|----------|-------------|------------|
+| `status_tool` | Show working tree status | `repo_path` |
+| `diff_unstaged_tool` | Show unstaged changes | `repo_path` |
+| `diff_staged_tool` | Show staged changes | `repo_path` |
+| `add_tool` | Stage files for commit | `repo_path`, `files` |
+| `commit_tool` | Commit staged changes | `repo_path`, `message` |
+| `log_tool` | Show commit history | `repo_path`, `max_count` |
+| `branch_list_tool` | List all branches | `repo_path` |
+| `create_branch_tool` | Create a new branch | `repo_path`, `branch_name`, `base_branch` |
+| `checkout_tool` | Switch branches | `repo_path`, `branch_name` |
+
 ## Project Structure
 
 ```
 mist/
-├── server.py                  # Main MCP server entry point
-├── tools/                     # Tool implementations
-│   ├── note_tools/            # Note management
-│   ├── gmail_tools/           # Gmail integration
-│   ├── calendar_tools/        # Calendar integration
-│   ├── tasks_tools/           # Tasks integration
-│   └── google_api/            # Google API common utilities
-├── config_docs/               # Configuration examples
-└── .env                       # Environment configuration
+├── __init__.py               # Package initialization with version info
+├── server.py                 # Main MCP server entry point
+├── tools/                    # Tool implementations
+│   ├── note_tools/           # Note management
+│   │   ├── __init__.py
+│   │   └── tool.py           # Note tool implementations
+│   ├── gmail_tools/          # Gmail integration
+│   │   ├── __init__.py
+│   │   ├── config.py         # Gmail-specific config
+│   │   ├── gmail.py          # Gmail API utilities
+│   │   └── tool.py           # Gmail tool implementations
+│   ├── calendar_tools/       # Calendar integration
+│   │   ├── __init__.py
+│   │   ├── calendar.py       # Calendar API utilities
+│   │   ├── config.py         # Calendar-specific config
+│   │   └── tool.py           # Calendar tool implementations
+│   ├── tasks_tools/          # Tasks integration
+│   │   ├── __init__.py
+│   │   ├── config.py         # Tasks-specific config
+│   │   ├── tasks.py          # Tasks API utilities
+│   │   └── tool.py           # Tasks tool implementations
+│   ├── git_tools/            # Git operations
+│   │   ├── __init__.py
+│   │   ├── config.py         # Git-specific config
+│   │   ├── gitapi.py         # Git functionality
+│   │   └── tool.py           # Git tool implementations
+│   ├── google_api/           # Common Google API utilities
+│   │   ├── __init__.py
+│   │   ├── client.py         # Google API client
+│   │   └── config.py         # Shared Google API config
+│   └── __init__.py           # Tools package init
+├── config_docs/              # Configuration documentation
+│   ├── api_reference.md      # API reference documentation
+│   ├── configs.md            # Example configuration templates
+│   ├── configuration_guide.md# Detailed configuration guide
+│   └── troubleshooting_guide.md # Troubleshooting guide
+├── .github/                  # GitHub configuration
+│   └── ISSUE_TEMPLATE/       # Issue templates for bug reports, etc.
+├── LICENSE                   # MIT License
+├── CONTRIBUTING.md           # Contributing guidelines
+├── README.md                 # Project documentation
+├── pyproject.toml            # Project metadata and dependencies
+├── uv.lock                   # UV lock file for dependencies
+├── credentials.json          # Google API credentials (should be user-provided)
+└── .env                      # Environment configuration (user-created)
 ```
 
 ## Security Considerations

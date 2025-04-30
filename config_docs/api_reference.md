@@ -571,6 +571,305 @@ Deletes a task list.
 delete_task_list_tool(task_list_id="MDAxOTg4NTI1NTIyMjM4OTU5NDI6MDow")
 ```
 
+## Git API
+
+### `status_tool`
+
+Shows the working tree status of a Git repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted string with the repository status
+
+**Example:**
+```python
+status_tool(repo_path="/path/to/repository")
+```
+
+### `diff_unstaged_tool`
+
+Shows changes in the working directory that are not yet staged.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted string with unstaged changes
+
+**Example:**
+```python
+diff_unstaged_tool(repo_path="/path/to/repository")
+```
+
+### `diff_staged_tool`
+
+Shows changes that are staged for commit.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted string with staged changes
+
+**Example:**
+```python
+diff_staged_tool(repo_path="/path/to/repository")
+```
+
+### `diff_tool`
+
+Shows differences between branches or commits.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `target` (string, required): Target to compare with (branch name, commit hash, etc.)
+
+**Returns:**
+- Formatted string with differences
+
+**Example:**
+```python
+diff_tool(repo_path="/path/to/repository", target="main")
+```
+
+### `commit_tool`
+
+Records changes to the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `message` (string, required): Commit message
+
+**Returns:**
+- Confirmation message with commit hash
+
+**Example:**
+```python
+commit_tool(
+    repo_path="/path/to/repository",
+    message="Fix bug in login functionality"
+)
+```
+
+### `add_tool`
+
+Adds file contents to the staging area.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `files` (list of strings, required): List of file paths to add
+
+**Returns:**
+- Confirmation message
+
+**Example:**
+```python
+add_tool(
+    repo_path="/path/to/repository",
+    files=["file1.txt", "directory/file2.js"]
+)
+```
+
+### `reset_tool`
+
+Unstages all staged changes.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Confirmation message
+
+**Example:**
+```python
+reset_tool(repo_path="/path/to/repository")
+```
+
+### `log_tool`
+
+Shows the commit logs.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `max_count` (integer, optional): Maximum number of commits to show (default: 10)
+
+**Returns:**
+- Formatted string with commit history
+
+**Example:**
+```python
+log_tool(repo_path="/path/to/repository", max_count=5)
+```
+
+### `create_branch_tool`
+
+Creates a new branch from an optional base branch.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `branch_name` (string, required): Name of the new branch
+- `base_branch` (string, optional): Base branch name (default: current branch)
+
+**Returns:**
+- Confirmation message
+
+**Example:**
+```python
+create_branch_tool(
+    repo_path="/path/to/repository",
+    branch_name="feature/user-authentication",
+    base_branch="develop"
+)
+```
+
+### `checkout_tool`
+
+Switches branches.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `branch_name` (string, required): Name of the branch to checkout
+
+**Returns:**
+- Confirmation message
+
+**Example:**
+```python
+checkout_tool(
+    repo_path="/path/to/repository",
+    branch_name="feature/user-authentication"
+)
+```
+
+### `show_tool`
+
+Shows the contents of a commit.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `revision` (string, required): Revision to show (commit hash, branch name, etc.)
+
+**Returns:**
+- Formatted string with commit details and changes
+
+**Example:**
+```python
+show_tool(
+    repo_path="/path/to/repository",
+    revision="abc123"
+)
+```
+
+### `init_tool`
+
+Initializes a new Git repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path where the repository should be initialized
+
+**Returns:**
+- Confirmation message
+
+**Example:**
+```python
+init_tool(repo_path="/path/to/new/repository")
+```
+
+### `branch_list_tool`
+
+Lists all branches in the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted string with list of branches
+
+**Example:**
+```python
+branch_list_tool(repo_path="/path/to/repository")
+```
+
+### `remote_list_tool`
+
+Lists all remotes for the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted string with list of remotes
+
+**Example:**
+```python
+remote_list_tool(repo_path="/path/to/repository")
+```
+
+### `remote_add_tool`
+
+Adds a remote to the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `name` (string, required): Name of the remote
+- `url` (string, required): URL of the remote
+
+**Returns:**
+- Confirmation message
+
+**Example:**
+```python
+remote_add_tool(
+    repo_path="/path/to/repository",
+    name="origin",
+    url="https://github.com/username/repository.git"
+)
+```
+
+### `pull_tool`
+
+Pulls changes from a remote.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `remote` (string, optional): Name of the remote (default: "origin")
+- `branch` (string, optional): Branch to pull (default: current branch)
+
+**Returns:**
+- Pull operation output
+
+**Example:**
+```python
+pull_tool(
+    repo_path="/path/to/repository",
+    remote="origin",
+    branch="main"
+)
+```
+
+### `push_tool`
+
+Pushes changes to a remote.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `remote` (string, optional): Name of the remote (default: "origin")
+- `branch` (string, optional): Branch to push (default: current branch)
+
+**Returns:**
+- Push operation output
+
+**Example:**
+```python
+push_tool(
+    repo_path="/path/to/repository",
+    remote="origin",
+    branch="feature/new-feature"
+)
+```
+
 ## Resource Endpoints
 
 MIST also provides direct access to resources through MCP resource endpoints:

@@ -141,7 +141,8 @@ def git_add(repo: git.Repo, files: List[str]) -> str:
         if non_existent:
             return f"Error: The following files do not exist: {', '.join(non_existent)}"
 
-        repo.index.add(files)
+        # Use Git's native add command which respects .gitignore and Git's internal rules
+        result = repo.git.add(*files)
         return f"Files staged successfully: {', '.join(files)}"
     except GitCommandError as e:
         return f"Error staging files: {str(e)}"

@@ -8,7 +8,7 @@ from tools.git_tools import register_tools_git
 
 mcp = FastMCP(
     "M.I.S.T.",
-    instructions="Save, Edit, Create, Delete Notes, Access and interact with Gmail, Calendar, Tasks, and Git repositories. You can get messages, search emails, send new messages, manage calendar events, organize tasks, and perform Git operations.",
+    instructions="Save, Edit, Create, Delete Notes, Access and interact with Gmail, Calendar, Tasks, and Git repositories. You can get messages, search emails, send new messages, manage calendar events, organize tasks, and perform advanced Git operations including commit management, branching, merging, rebasing, stashing, tagging, blame tracking, and repository configuration.",
 )
 
 register_tools_note(mcp)

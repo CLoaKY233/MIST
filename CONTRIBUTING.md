@@ -67,10 +67,18 @@ Please be respectful and considerate of others in all interactions. We aim to fo
    ```
 
 6. Configure your environment:
+   Create a `.env` file in the root of the project. You can refer to the "Environment Configuration" section in `README.md` or the `config_docs/configuration_guide.md` for details on the required variables.
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   # Create and edit .env with your configuration
+   # For example, on Linux/macOS:
+   # touch .env
+   # nano .env 
+   #
+   # On Windows (PowerShell):
+   # New-Item .env -ItemType File
+   # notepad .env
    ```
+   Ensure you set at least `MIST_NOTES_DIR` and the Google API related paths if you plan to use those integrations.
 
 ### Running the Development Server
 

@@ -34,15 +34,15 @@ Add the following configuration to your Claude Desktop settings to connect to th
         "--with",
         "mcp[cli]",
         "--with-editable",
-        "C:\\Users\\username\\projects\\mist",
+        "C:/Users/username/projects/mist",
         "mcp",
         "run",
-        "C:\\Users\\username\\projects\\mist\\server.py"
+        "C:/Users/username/projects/mist/server.py"
       ],
       "env": {
-        "MIST_GOOGLE_CREDENTIALS_PATH": "C:\\Users\\username\\projects\\mist\\credentials.json",
-        "MIST_GOOGLE_TOKEN_PATH": "C:\\Users\\username\\projects\\mist\\token.json",
-        "MIST_NOTES_DIR": "C:\\Users\\username\\Documents\\Notes"
+        "MIST_GOOGLE_CREDENTIALS_PATH": "C:/Users/username/projects/mist/credentials.json",
+        "MIST_GOOGLE_TOKEN_PATH": "C:/Users/username/projects/mist/token.json",
+        "MIST_NOTES_DIR": "C:/Users/username/Documents/Notes"
       }
     }
   }
@@ -92,15 +92,15 @@ Add the following configuration to your Zed editor settings to connect to the MI
         "--with",
         "mcp[cli]",
         "--with-editable",
-        "C:\\Users\\username\\projects\\mist",
+        "C:/Users/username/projects/mist",
         "mcp",
         "run",
-        "C:\\Users\\username\\projects\\mist\\server.py"
+        "C:/Users/username/projects/mist/server.py"
       ],
       "env": {
-        "MIST_GOOGLE_CREDENTIALS_PATH": "C:\\Users\\username\\projects\\mist\\credentials.json",
-        "MIST_GOOGLE_TOKEN_PATH": "C:\\Users\\username\\projects\\mist\\token.json",
-        "MIST_NOTES_DIR": "C:\\Users\\username\\Documents\\Notes"
+        "MIST_GOOGLE_CREDENTIALS_PATH": "C:/Users/username/projects/mist/credentials.json",
+        "MIST_GOOGLE_TOKEN_PATH": "C:/Users/username/projects/mist/token.json",
+        "MIST_NOTES_DIR": "C:/Users/username/Documents/Notes"
       }
     },
     "settings": {

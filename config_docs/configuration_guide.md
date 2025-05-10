@@ -150,7 +150,7 @@ MIST's Git integration operates on local Git repositories. When using Git tools,
 
 1. Already initialized with Git
 2. Accessible and writable by the MIST process
-3. Specified with a full path (relative or absolute)
+3. Specified with a complete path to the repository. This can be an absolute path (e.g., `C:/Users/name/project` or `/home/user/project`) or a path relative to the MIST server's current working directory.
 
 Example Git repository path:
 ```

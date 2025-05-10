@@ -22,7 +22,7 @@ This guide provides solutions for common issues you may encounter when setting u
    ```bash
    pip install --upgrade pip
    # or for UV
-   pip install --upgrade uv
+   # Ensure UV is up to date by following its official installation/update guide (e.g., from https://astral.sh/uv)
    ```
 
 2. Check for system-level dependencies:
@@ -375,11 +375,14 @@ git branch --show-current
 
 ### Check Server Ports
 
+MIST, when run with `mcp run mist/server.py`, will typically use the default port assigned by the underlying Uvicorn server (often 8000 if not specified) or a port specified in your `mcp run` command if you've added one. The port `1334` is a common example for MCP servers. Verify which port MIST is using by checking the server startup logs or your execution command.
+
+To check if a specific port (e.g., 1334 or your MIST server's port) is in use:
 ```bash
-# Linux/macOS
+# Linux/macOS (replace 1334 with your server's port if different)
 lsof -i :1334
 
-# Windows
+# Windows (replace 1334 with your server's port if different)
 netstat -ano | findstr 1334
 ```
 
@@ -391,5 +394,18 @@ where python # On Windows
 which -a python # On Linux/macOS
 
 # Check virtual environments
+# For UV
 uv venv list
+
+# For standard Python venv or global installs, verify the active Python interpreter:
+# On Linux/macOS:
+which python
+python --version
+# On Windows (PowerShell):
+Get-Command python
+python --version
+# On Windows (Command Prompt):
+where python
+python --version
+# Ensure the output matches your project's required Python version (3.13+).
 ```

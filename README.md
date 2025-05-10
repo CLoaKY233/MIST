@@ -381,17 +381,25 @@ When you first run the server, you'll need to authenticate with Google:
 
 ### Git API
 
-| Function | Description | Parameters |
-|----------|-------------|------------|
+Below is a selection of commonly used Git tools. For a complete list and detailed parameters, please refer to the [API Reference](./config_docs/api_reference.md).
+
+| Function | Description | Key Parameters |
+|----------|-------------|----------------|
 | `status_tool` | Show working tree status | `repo_path` |
 | `diff_unstaged_tool` | Show unstaged changes | `repo_path` |
 | `diff_staged_tool` | Show staged changes | `repo_path` |
 | `add_tool` | Stage files for commit | `repo_path`, `files` |
+| `reset_tool` | Reset current HEAD or unstage files | `repo_path`, `commit_ish` (opt), `mode` (opt) |
 | `commit_tool` | Commit staged changes | `repo_path`, `message` |
-| `log_tool` | Show commit history | `repo_path`, `max_count` |
+| `log_tool` | Show commit history | `repo_path`, `max_count` (opt) |
 | `branch_list_tool` | List all branches | `repo_path` |
-| `create_branch_tool` | Create a new branch | `repo_path`, `branch_name`, `base_branch` |
+| `create_branch_tool` | Create a new branch | `repo_path`, `branch_name`, `base_branch` (opt) |
 | `checkout_tool` | Switch branches | `repo_path`, `branch_name` |
+| `merge_tool` | Merge a branch or manage merge state | `repo_path`, `branch` (opt), `abort` (opt) |
+| `rebase_tool` | Rebase current branch or manage rebase state | `repo_path`, `branch_or_commit` (opt), `interactive` (opt), `abort` (opt), `continue_rebase` (opt) |
+| `stash_save_tool` | Stash current changes | `repo_path`, `message` (opt) |
+| `pull_tool` | Pull changes from a remote | `repo_path`, `remote` (opt), `branch` (opt) |
+| `push_tool` | Push changes to a remote | `repo_path`, `remote` (opt), `branch` (opt), `force` (opt), `tags` (opt) |
 
 ## Project Structure
 
@@ -420,9 +428,9 @@ mist/
 │   │   └── tool.py           # Tasks tool implementations
 │   ├── git_tools/            # Git operations
 │   │   ├── __init__.py
-│   │   ├── config.py         # Git-specific config
-│   │   ├── gitapi.py         # Git functionality
-│   │   └── tool.py           # Git tool implementations
+│   │   ├── config.py         # Git-specific config (imports from google_api)
+│   │   ├── gitapi.py         # Core Git command implementations
+│   │   └── tool.py           # Git tool functions exposed to MCP
 │   ├── google_api/           # Common Google API utilities
 │   │   ├── __init__.py
 │   │   ├── client.py         # Google API client

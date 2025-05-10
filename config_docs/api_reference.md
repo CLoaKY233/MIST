@@ -674,17 +674,35 @@ add_tool(
 
 ### `reset_tool`
 
-Unstages all staged changes.
+Reset the current HEAD to a specified state, or unstage files from the index.
 
 **Parameters:**
-- `repo_path` (string, required): Path to the Git repository
+- `repo_path` (string, required): Path to the Git repository.
+- `commit_ish` (string, optional): The commit to reset to (e.g., 'HEAD~1', a commit hash, a branch name). If not provided and `mode` is also not 'soft', 'mixed', or 'hard', this command will unstage all changes (equivalent to `git reset`).
+- `mode` (string, optional): The reset mode. Can be 'soft', 'mixed', or 'hard'.
+  - `soft`: Resets HEAD to `commit_ish` but does not touch the index file or the working tree at all. Changes are left as "Changes to be committed".
+  - `mixed`: (Default if `commit_ish` is provided and `mode` is not) Resets HEAD and index to `commit_ish`. Changes in the working directory are preserved but unstaged.
+  - `hard`: Resets HEAD, index, and working directory to `commit_ish`. All changes to tracked files in the working tree since `commit_ish` are discarded.
+  If `commit_ish` is None and `mode` is None, it unstages all files from the index.
 
 **Returns:**
-- Confirmation message
+- Confirmation message describing the reset operation.
 
-**Example:**
+**Example (Unstage all files):**
 ```python
 reset_tool(repo_path="/path/to/repository")
+```
+**Example (Soft reset to previous commit):**
+```python
+reset_tool(repo_path="/path/to/repository", commit_ish="HEAD~1", mode="soft")
+```
+**Example (Hard reset to a specific commit):**
+```python
+reset_tool(repo_path="/path/to/repository", commit_ish="a1b2c3d", mode="hard")
+```
+**Example (Mixed reset to main branch):**
+```python
+reset_tool(repo_path="/path/to/repository", commit_ish="main") # mode defaults to 'mixed'
 ```
 
 ### `log_tool`
@@ -857,6 +875,8 @@ Pushes changes to a remote.
 - `repo_path` (string, required): Path to the Git repository
 - `remote` (string, optional): Name of the remote (default: "origin")
 - `branch` (string, optional): Branch to push (default: current branch)
+- `force` (boolean, optional): Force push even if it results in a non-fast-forward merge (default: False)
+- `tags` (boolean, optional): Push all tags to the remote (default: False)
 
 **Returns:**
 - Push operation output
@@ -866,8 +886,373 @@ Pushes changes to a remote.
 push_tool(
     repo_path="/path/to/repository",
     remote="origin",
-    branch="feature/new-feature"
+    branch="feature/new-feature",
+    force=True
 )
+```
+
+### `cherry_pick_tool`
+
+Apply the changes introduced by an existing commit.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `commit_hash` (string, required): The commit hash to cherry-pick
+
+**Returns:**
+- Cherry-pick output as string, indicating success or conflicts.
+
+**Example:**
+```python
+cherry_pick_tool(repo_path="/path/to/repository", commit_hash="a1b2c3d")
+```
+
+### `stash_save_tool`
+
+Stash changes in the working directory.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `message` (string, optional): Optional message for the stash
+- `include_untracked` (boolean, optional): Include untracked files in the stash (default: False)
+
+**Returns:**
+- Stash save output as string.
+
+**Example:**
+```python
+stash_save_tool(repo_path="/path/to/repository", message="WIP on feature X", include_untracked=True)
+```
+
+### `stash_list_tool`
+
+List all stashes in the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted list of stashes.
+
+**Example:**
+```python
+stash_list_tool(repo_path="/path/to/repository")
+```
+
+### `stash_apply_tool`
+
+Apply a stashed state.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `stash_id` (string, optional): Identifier of the stash to apply (e.g., 'stash@{0}'). If None, applies the latest stash.
+- `index` (boolean, optional): Whether to restore the index state as well (default: False)
+
+**Returns:**
+- Stash apply output as string, indicating success or conflicts.
+
+**Example:**
+```python
+stash_apply_tool(repo_path="/path/to/repository", stash_id="stash@{1}", index=True)
+```
+
+### `stash_pop_tool`
+
+Apply and remove a stashed state.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `stash_id` (string, optional): Identifier of the stash to pop (e.g., 'stash@{0}'). If None, pops the latest stash.
+
+**Returns:**
+- Stash pop output as string, indicating success or conflicts.
+
+**Example:**
+```python
+stash_pop_tool(repo_path="/path/to/repository")
+```
+
+### `stash_drop_tool`
+
+Remove a stashed state.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `stash_id` (string, optional): Identifier of the stash to drop (e.g., 'stash@{0}'). If None, drops the latest stash.
+
+**Returns:**
+- Stash drop output as string.
+
+**Example:**
+```python
+stash_drop_tool(repo_path="/path/to/repository", stash_id="stash@{2}")
+```
+
+### `rebase_tool`
+
+Rebase the current branch onto another branch or commit, or manage an in-progress rebase.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `branch_or_commit` (string, optional): Branch or commit to rebase onto. Required unless `abort` or `continue_rebase` is True.
+- `interactive` (boolean, optional): Start an interactive rebase (default: False)
+- `abort` (boolean, optional): Abort an in-progress rebase (default: False)
+- `continue_rebase` (boolean, optional): Continue an in-progress rebase after resolving conflicts (default: False)
+
+**Returns:**
+- Rebase output as string, indicating success, conflicts, or status.
+
+**Example (Start Rebase):**
+```python
+rebase_tool(repo_path="/path/to/repository", branch_or_commit="main", interactive=True)
+```
+**Example (Continue Rebase):**
+```python
+rebase_tool(repo_path="/path/to/repository", continue_rebase=True)
+```
+**Example (Abort Rebase):**
+```python
+rebase_tool(repo_path="/path/to/repository", abort=True)
+```
+
+### `merge_tool`
+
+Merge a branch into the current branch, or manage an in-progress merge.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `branch` (string, optional): Branch to merge. Required unless `abort` is True.
+- `strategy` (string, optional): Merge strategy (e.g., 'recursive', 'resolve', 'octopus', 'ours', 'subtree')
+- `commit_message` (string, optional): Custom commit message for the merge
+- `no_ff` (boolean, optional): Create a merge commit even if it's a fast-forward merge (default: False)
+- `abort` (boolean, optional): Abort an in-progress merge (default: False)
+
+**Returns:**
+- Merge output as string, indicating success, conflicts, or status.
+
+**Example (Merge Branch):**
+```python
+merge_tool(repo_path="/path/to/repository", branch="feature/xyz", strategy="ours", no_ff=True)
+```
+**Example (Abort Merge):**
+```python
+merge_tool(repo_path="/path/to/repository", abort=True)
+```
+
+### `tag_create_tool`
+
+Create a new tag.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `tag_name` (string, required): Name of the tag
+- `message` (string, optional): Tag message. If provided, creates an annotated tag; otherwise, a lightweight tag.
+- `commit` (string, optional): Commit to tag (e.g., commit hash, branch name). If not provided, tags the current HEAD.
+
+**Returns:**
+- Tag creation output as string.
+
+**Example:**
+```python
+tag_create_tool(repo_path="/path/to/repository", tag_name="v1.0", message="Version 1.0 Release", commit="main")
+```
+
+### `tag_list_tool`
+
+List all tags in the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+
+**Returns:**
+- Formatted list of tags with their associated commit and message (if annotated).
+
+**Example:**
+```python
+tag_list_tool(repo_path="/path/to/repository")
+```
+
+### `tag_delete_tool`
+
+Delete a tag.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `tag_name` (string, required): Name of the tag to delete
+
+**Returns:**
+- Tag deletion output as string.
+
+**Example:**
+```python
+tag_delete_tool(repo_path="/path/to/repository", tag_name="v0.9-alpha")
+```
+
+### `amend_commit_tool`
+
+Amend the last commit. Allows changing the commit message and/or adding more changes.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `message` (string, optional): New commit message. If not provided and `no_edit` is False, an editor will typically open.
+- `no_edit` (boolean, optional): Use the existing commit message without modification (default: False). Cannot be used if `message` is also provided.
+
+**Returns:**
+- Amend commit output as string.
+
+**Example (New Message):**
+```python
+# (Stage files first using add_tool if you want to add changes)
+amend_commit_tool(repo_path="/path/to/repository", message="Fix typo in previous commit message and add newfile.txt")
+```
+**Example (No Edit):**
+```python
+# (Stage files first using add_tool to add changes with the same message)
+amend_commit_tool(repo_path="/path/to/repository", no_edit=True)
+```
+
+### `blame_tool`
+
+Show who last modified each line of a file.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `file_path` (string, required): Path to the file within the repository
+- `start_line` (integer, optional): First line to show (1-based).
+- `end_line` (integer, optional): Last line to show (1-based). If provided, `start_line` must also be provided.
+
+**Returns:**
+- Blame output as string, showing commit hash, author, date, and line content.
+
+**Example:**
+```python
+blame_tool(repo_path="/path/to/project", file_path="src/main.py", start_line=10, end_line=20)
+```
+
+### `branch_delete_tool`
+
+Delete a branch.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `branch_name` (string, required): Name of the branch to delete
+- `force` (boolean, optional): Force deletion even if the branch contains unmerged changes (default: False). Use `-D` equivalent.
+
+**Returns:**
+- Branch deletion output as string.
+
+**Example:**
+```python
+branch_delete_tool(repo_path="/path/to/repository", branch_name="old-feature", force=True)
+```
+
+### `clean_tool`
+
+Remove untracked files from the working tree.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `directories` (boolean, optional): Also remove untracked directories (default: False). Equivalent to `-d`.
+- `force` (boolean, optional): Force removal. Required if `clean.requireForce` is not set to false (default: False). Equivalent to `-f`.
+- `dry_run` (boolean, optional): Show what would be done without actually removing files (default: True). Equivalent to `-n`.
+
+**Returns:**
+- Clean output as string, listing files/directories that would be/were removed.
+
+**Example (Dry Run):**
+```python
+clean_tool(repo_path="/path/to/repository", directories=True, dry_run=True)
+```
+**Example (Actual Clean):**
+```python
+clean_tool(repo_path="/path/to/repository", directories=True, force=True, dry_run=False)
+```
+
+### `config_get_tool`
+
+Get a git configuration value.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `key` (string, required): Configuration key (e.g., 'user.name', 'core.editor')
+- `global_config` (boolean, optional): Get from global config instead of local repository config (default: False)
+
+**Returns:**
+- Configuration value as string, or a message if the key is not found.
+
+**Example:**
+```python
+config_get_tool(repo_path="/path/to/repository", key="user.email")
+config_get_tool(repo_path="/path/to/repository", key="user.name", global_config=True)
+```
+
+### `config_set_tool`
+
+Set a git configuration value.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `key` (string, required): Configuration key (e.g., 'user.name')
+- `value` (string, required): Configuration value to set
+- `global_config` (boolean, optional): Set in global config instead of local repository config (default: False)
+
+**Returns:**
+- Confirmation message.
+
+**Example:**
+```python
+config_set_tool(repo_path="/path/to/repository", key="user.name", value="New User Name")
+config_set_tool(repo_path="/path/to/repository", key="alias.st", value="status", global_config=True)
+```
+
+### `reflog_tool`
+
+Show the reference logs (reflog). Reflog records when the tips of branches and other references were updated in the local repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the Git repository
+- `max_count` (integer, optional): Maximum number of reflog entries to return (default: 10)
+
+**Returns:**
+- Formatted reflog output as a string.
+
+**Example:**
+```python
+reflog_tool(repo_path="/path/to/repository", max_count=5)
+```
+
+### `submodule_add_tool`
+
+Add a new submodule to the repository.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the parent Git repository
+- `repository` (string, required): URL of the submodule repository to add
+- `path` (string, required): Path within the parent repository where the submodule should be cloned
+
+**Returns:**
+- Submodule add output as string.
+
+**Example:**
+```python
+submodule_add_tool(repo_path="/path/to/parent-repo", repository="https://github.com/user/sub-repo.git", path="libs/sub-repo")
+```
+
+### `submodule_update_tool`
+
+Update registered submodules to match what the superproject expects. This can initialize, fetch, and checkout submodules.
+
+**Parameters:**
+- `repo_path` (string, required): Path to the parent Git repository
+- `init` (boolean, optional): Initialize uninitialized submodules (i.e., copy submodule URLs from `.gitmodules` to local `.git/config`) (default: True).
+- `recursive` (boolean, optional): Also update nested submodules recursively (default: True).
+
+**Returns:**
+- Submodule update output as string.
+
+**Example:**
+```python
+submodule_update_tool(repo_path="/path/to/parent-repo", init=True, recursive=True)
 ```
 
 ## Resource Endpoints

@@ -6,7 +6,7 @@ MIST is a comprehensive MCP (Model Context Protocol) server that empowers AI ass
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.1.1-green.svg)](https://github.com/cloaky233/mist)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/cloaky233/mist)
 
 ## Overview
 

@@ -2,13 +2,14 @@
 Git functionality module for interacting with Git repositories.
 """
 
-from pathlib import Path
-from typing import List, Optional, Dict, Any, Union, Tuple
-import git
 import os
 import re
+from typing import Any, Dict, List, Optional
 
-from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
+import git
+from git.exc import GitCommandError as GitExcCommandError
+from git.exc import InvalidGitRepositoryError, NoSuchPathError
+
 
 def get_repo(repo_path: str) -> git.Repo:
     """
@@ -29,6 +30,7 @@ def get_repo(repo_path: str) -> git.Repo:
     except (InvalidGitRepositoryError, NoSuchPathError) as e:
         raise e
 
+
 def git_status(repo: git.Repo) -> str:
     """
     Get the status of the Git repository.
@@ -44,8 +46,9 @@ def git_status(repo: git.Repo) -> str:
     """
     try:
         return repo.git.status()
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error getting status: {str(e)}"
+
 
 def git_diff_unstaged(repo: git.Repo) -> str:
     """
@@ -62,8 +65,9 @@ def git_diff_unstaged(repo: git.Repo) -> str:
     """
     try:
         return repo.git.diff()
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error getting unstaged diff: {str(e)}"
+
 
 def git_diff_staged(repo: git.Repo) -> str:
     """
@@ -80,8 +84,9 @@ def git_diff_staged(repo: git.Repo) -> str:
     """
     try:
         return repo.git.diff("--cached")
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error getting staged diff: {str(e)}"
+
 
 def git_diff(repo: git.Repo, target: str) -> str:
     """
@@ -99,8 +104,9 @@ def git_diff(repo: git.Repo, target: str) -> str:
     """
     try:
         return repo.git.diff(target)
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error getting diff with {target}: {str(e)}"
+
 
 def git_commit(repo: git.Repo, message: str) -> str:
     """
@@ -119,8 +125,9 @@ def git_commit(repo: git.Repo, message: str) -> str:
     try:
         commit = repo.index.commit(message)
         return f"Changes committed successfully with hash {commit.hexsha}"
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error committing changes: {str(e)}"
+
 
 def git_add(repo: git.Repo, files: List[str]) -> str:
     """
@@ -138,17 +145,24 @@ def git_add(repo: git.Repo, files: List[str]) -> str:
     """
     try:
         # Check if files exist before adding
-        non_existent = [f for f in files if not os.path.exists(os.path.join(repo.working_dir, f))]
+        non_existent = [
+            f
+            for f in files
+            if not os.path.exists(os.path.join(repo.working_dir, f))
+        ]
         if non_existent:
             return f"Error: The following files do not exist: {', '.join(non_existent)}"
 
         # Use Git's native add command which respects .gitignore and Git's internal rules
-        result = repo.git.add(*files)
+        repo.git.add(*files)
         return f"Files staged successfully: {', '.join(files)}"
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error staging files: {str(e)}"
 
-def git_reset(repo: git.Repo, commit_ish: Optional[str] = None, mode: Optional[str] = None) -> str:
+
+def git_reset(
+    repo: git.Repo, commit_ish: Optional[str] = None, mode: Optional[str] = None
+) -> str:
     """
     Reset the current HEAD to a specified state or unstage files.
 
@@ -170,23 +184,24 @@ def git_reset(repo: git.Repo, commit_ish: Optional[str] = None, mode: Optional[s
         return "All staged changes reset"
     elif commit_ish is not None:
         # Reset to a specific commit with specified mode
-        mode = mode or 'mixed'  # Default to mixed mode if not specified
-        if mode not in ['soft', 'mixed', 'hard']:
+        mode = mode or "mixed"  # Default to mixed mode if not specified
+        if mode not in ["soft", "mixed", "hard"]:
             return f"Error: Invalid mode '{mode}'. Must be 'soft', 'mixed', or 'hard'."
         try:
-            repo.git.reset(commit_ish, '--' + mode)
+            repo.git.reset(commit_ish, "--" + mode)
             return f"Repository reset to {commit_ish} using {mode} mode"
-        except GitCommandError as e:
+        except GitExcCommandError as e:
             return f"Error resetting to {commit_ish}: {str(e)}"
     else:
         # Only mode provided, but no commit - reset current HEAD with that mode
-        if mode not in ['soft', 'mixed', 'hard']:
+        if mode not in ["soft", "mixed", "hard"]:
             return f"Error: Invalid mode '{mode}'. Must be 'soft', 'mixed', or 'hard'."
         try:
-            repo.git.reset('HEAD', '--' + mode)
+            repo.git.reset("HEAD", "--" + mode)
             return f"Repository reset to HEAD using {mode} mode"
-        except GitCommandError as e:
+        except GitExcCommandError as e:
             return f"Error resetting: {str(e)}"
+
 
 def git_log(repo: git.Repo, max_count: int = 10) -> List[Dict[str, Any]]:
     """
@@ -200,18 +215,22 @@ def git_log(repo: git.Repo, max_count: int = 10) -> List[Dict[str, Any]]:
         List of commit details
     """
     commits = list(repo.iter_commits(max_count=max_count))
-    log = []
+    log: List[Dict[str, Any]] = []
     for commit in commits:
-        log.append({
+        entry: Dict[str, Any] = {
             "hash": commit.hexsha,
             "short_hash": commit.hexsha[:7],
             "author": f"{commit.author.name} <{commit.author.email}>",
             "date": commit.authored_datetime.isoformat(),
             "message": commit.message.strip(),
-        })
+        }
+        log.append(entry)
     return log
 
-def git_create_branch(repo: git.Repo, branch_name: str, base_branch: Optional[str] = None) -> str:
+
+def git_create_branch(
+    repo: git.Repo, branch_name: str, base_branch: Optional[str] = None
+) -> str:
     """
     Create a new branch.
 
@@ -231,6 +250,7 @@ def git_create_branch(repo: git.Repo, branch_name: str, base_branch: Optional[st
     repo.create_head(branch_name, base)
     return f"Created branch '{branch_name}' from '{base.name}'"
 
+
 def git_checkout(repo: git.Repo, branch_name: str) -> str:
     """
     Checkout a branch.
@@ -244,6 +264,7 @@ def git_checkout(repo: git.Repo, branch_name: str) -> str:
     """
     repo.git.checkout(branch_name)
     return f"Switched to branch '{branch_name}'"
+
 
 def git_show(repo: git.Repo, revision: str) -> str:
     """
@@ -276,12 +297,13 @@ def git_show(repo: git.Repo, revision: str) -> str:
         if d.diff is None:
             output.append("(No diff available)")
         elif isinstance(d.diff, bytes):
-            output.append(d.diff.decode('utf-8'))
+            output.append(d.diff.decode("utf-8"))
         else:
             # Already a string or another type that can be converted to string
             output.append(str(d.diff))
 
     return "".join(output)
+
 
 def git_init(repo_path: str) -> str:
     """
@@ -299,6 +321,7 @@ def git_init(repo_path: str) -> str:
     except Exception as e:
         return f"Error initializing repository: {str(e)}"
 
+
 def git_branch_list(repo: git.Repo) -> List[Dict[str, Any]]:
     """
     List all branches.
@@ -309,15 +332,17 @@ def git_branch_list(repo: git.Repo) -> List[Dict[str, Any]]:
     Returns:
         List of branch details
     """
-    branches = []
+    branches: List[Dict[str, Any]] = []
     for branch in repo.branches:
-        branches.append({
+        branch_info: Dict[str, Any] = {
             "name": branch.name,
             "commit": branch.commit.hexsha[:7],
             "message": branch.commit.message.strip(),
-            "is_active": branch.name == repo.active_branch.name
-        })
+            "is_active": branch.name == repo.active_branch.name,
+        }
+        branches.append(branch_info)
     return branches
+
 
 def git_remote_list(repo: git.Repo) -> List[Dict[str, str]]:
     """
@@ -329,13 +354,15 @@ def git_remote_list(repo: git.Repo) -> List[Dict[str, str]]:
     Returns:
         List of remote details
     """
-    remotes = []
+    remotes: List[Dict[str, str]] = []
     for remote in repo.remotes:
-        remotes.append({
+        remote_info: Dict[str, str] = {
             "name": remote.name,
-            "url": next(remote.urls)
-        })
+            "url": next(remote.urls),
+        }
+        remotes.append(remote_info)
     return remotes
+
 
 def git_stash_list(repo: git.Repo) -> List[Dict[str, Any]]:
     """
@@ -347,11 +374,12 @@ def git_stash_list(repo: git.Repo) -> List[Dict[str, Any]]:
     Returns:
         List of stash details
     """
-    stashes = []
+    stashes: List[Dict[str, str]] = []
     for stash in repo.git.stash("list").splitlines():
         if stash:
             stashes.append({"description": stash})
     return stashes
+
 
 def git_remote_add(repo: git.Repo, name: str, url: str) -> str:
     """
@@ -368,7 +396,10 @@ def git_remote_add(repo: git.Repo, name: str, url: str) -> str:
     repo.create_remote(name, url)
     return f"Added remote '{name}' with URL '{url}'"
 
-def git_pull(repo: git.Repo, remote: str = "origin", branch: Optional[str] = None) -> str:
+
+def git_pull(
+    repo: git.Repo, remote: str = "origin", branch: Optional[str] = None
+) -> str:
     """
     Pull changes from a remote.
 
@@ -385,7 +416,14 @@ def git_pull(repo: git.Repo, remote: str = "origin", branch: Optional[str] = Non
     else:
         return repo.git.pull(remote)
 
-def git_push(repo: git.Repo, remote: str = "origin", branch: Optional[str] = None, force: bool = False, tags: bool = False) -> str:
+
+def git_push(
+    repo: git.Repo,
+    remote: str = "origin",
+    branch: Optional[str] = None,
+    force: bool = False,
+    tags: bool = False,
+) -> str:
     """
     Push changes to a remote.
 
@@ -399,16 +437,17 @@ def git_push(repo: git.Repo, remote: str = "origin", branch: Optional[str] = Non
     Returns:
         Push output as string
     """
-    args = []
+    args: List[str] = []
     if force:
-        args.append('--force')
+        args.append("--force")
     if tags:
-        args.append('--tags')
-    
+        args.append("--tags")
+
     if branch:
         return repo.git.push(remote, branch, *args)
     else:
         return repo.git.push(remote, *args)
+
 
 def git_cherry_pick(repo: git.Repo, commit_hash: str) -> str:
     """
@@ -423,12 +462,17 @@ def git_cherry_pick(repo: git.Repo, commit_hash: str) -> str:
     """
     try:
         return repo.git.cherry_pick(commit_hash)
-    except GitCommandError as e:
-        if "could not apply" in str(e) and "conflicts" in str(e):
+    except GitExcCommandError as e:
+        if "conflicts" in str(e):
             return f"Cherry-pick conflict: {str(e)}\nPlease resolve conflicts and complete the cherry-pick."
         return f"Error cherry-picking {commit_hash}: {str(e)}"
 
-def git_stash_save(repo: git.Repo, message: Optional[str] = None, include_untracked: bool = False) -> str:
+
+def git_stash_save(
+    repo: git.Repo,
+    message: Optional[str] = None,
+    include_untracked: bool = False,
+) -> str:
     """
     Stash changes in the working directory.
 
@@ -440,15 +484,18 @@ def git_stash_save(repo: git.Repo, message: Optional[str] = None, include_untrac
     Returns:
         Stash save output as string
     """
-    args = []
+    args: List[str] = []
     if message:
-        args.extend(['save', message])
+        args.extend(["save", message])
     if include_untracked:
-        args.append('--include-untracked')
-    
+        args.append("--include-untracked")
+
     return repo.git.stash(*args)
 
-def git_stash_apply(repo: git.Repo, stash_id: Optional[str] = None, index: bool = False) -> str:
+
+def git_stash_apply(
+    repo: git.Repo, stash_id: Optional[str] = None, index: bool = False
+) -> str:
     """
     Apply a stashed state.
 
@@ -460,18 +507,19 @@ def git_stash_apply(repo: git.Repo, stash_id: Optional[str] = None, index: bool 
     Returns:
         Stash apply output as string
     """
-    args = ['apply']
+    args: List[str] = ["apply"]
     if index:
-        args.append('--index')
+        args.append("--index")
     if stash_id:
         args.append(stash_id)
-    
+
     try:
         return repo.git.stash(*args)
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         if "conflicts" in str(e):
             return f"Stash apply conflict: {str(e)}\nPlease resolve conflicts manually."
         return f"Error applying stash: {str(e)}"
+
 
 def git_stash_pop(repo: git.Repo, stash_id: Optional[str] = None) -> str:
     """
@@ -484,16 +532,17 @@ def git_stash_pop(repo: git.Repo, stash_id: Optional[str] = None) -> str:
     Returns:
         Stash pop output as string
     """
-    args = ['pop']
+    args: List[str] = ["pop"]
     if stash_id:
         args.append(stash_id)
-    
+
     try:
         return repo.git.stash(*args)
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         if "conflicts" in str(e):
             return f"Stash pop conflict: {str(e)}\nPlease resolve conflicts manually."
         return f"Error popping stash: {str(e)}"
+
 
 def git_stash_drop(repo: git.Repo, stash_id: Optional[str] = None) -> str:
     """
@@ -506,13 +555,20 @@ def git_stash_drop(repo: git.Repo, stash_id: Optional[str] = None) -> str:
     Returns:
         Stash drop output as string
     """
-    args = ['drop']
+    args: List[str] = ["drop"]
     if stash_id:
         args.append(stash_id)
-    
+
     return repo.git.stash(*args)
 
-def git_rebase(repo: git.Repo, branch_or_commit: str, interactive: bool = False, abort: bool = False, continue_rebase: bool = False) -> str:
+
+def git_rebase(
+    repo: git.Repo,
+    branch_or_commit: str,
+    interactive: bool = False,
+    abort: bool = False,
+    continue_rebase: bool = False,
+) -> str:
     """
     Rebase the current branch onto another branch or commit.
 
@@ -528,28 +584,36 @@ def git_rebase(repo: git.Repo, branch_or_commit: str, interactive: bool = False,
     """
     if abort:
         try:
-            return repo.git.rebase('--abort')
-        except GitCommandError as e:
+            return repo.git.rebase("--abort")
+        except GitExcCommandError as e:
             return f"Error aborting rebase: {str(e)}"
-    
+
     if continue_rebase:
         try:
-            return repo.git.rebase('--continue')
-        except GitCommandError as e:
+            return repo.git.rebase("--continue")
+        except GitExcCommandError as e:
             return f"Error continuing rebase: {str(e)}"
-    
-    args = []
+
+    args: List[str] = []
     if interactive:
-        args.append('-i')
-    
+        args.append("-i")
+
     try:
         return repo.git.rebase(branch_or_commit, *args)
-    except GitCommandError as e:
-        if "conflicts" in str(e):
+    except GitExcCommandError as e:
+        if "CONFLICT" in str(e):
             return f"Rebase conflict: {str(e)}\nUse 'git rebase --continue' after resolving conflicts or 'git rebase --abort' to abort."
         return f"Error during rebase: {str(e)}"
 
-def git_merge(repo: git.Repo, branch: str, strategy: Optional[str] = None, commit_message: Optional[str] = None, no_ff: bool = False, abort: bool = False) -> str:
+
+def git_merge(
+    repo: git.Repo,
+    branch: str,
+    strategy: Optional[str] = None,
+    commit_message: Optional[str] = None,
+    no_ff: bool = False,
+    abort: bool = False,
+) -> str:
     """
     Merge a branch into the current branch.
 
@@ -566,26 +630,32 @@ def git_merge(repo: git.Repo, branch: str, strategy: Optional[str] = None, commi
     """
     if abort:
         try:
-            return repo.git.merge('--abort')
-        except GitCommandError as e:
+            return repo.git.merge("--abort")
+        except GitExcCommandError as e:
             return f"Error aborting merge: {str(e)}"
-    
-    args = []
+
+    args: List[str] = []
     if strategy:
-        args.extend(['--strategy', strategy])
+        args.extend(["--strategy", strategy])
     if commit_message:
-        args.extend(['-m', commit_message])
+        args.extend(["-m", commit_message])
     if no_ff:
-        args.append('--no-ff')
-    
+        args.append("--no-ff")
+
     try:
         return repo.git.merge(branch, *args)
-    except GitCommandError as e:
-        if "Automatic merge failed" in str(e) or "conflicts" in str(e).lower():
+    except GitExcCommandError as e:
+        if "CONFLICT" in str(e):
             return f"Merge conflict: {str(e)}\nResolve conflicts and commit, or use 'git merge --abort'."
         return f"Error merging {branch}: {str(e)}"
 
-def git_tag_create(repo: git.Repo, tag_name: str, message: Optional[str] = None, commit: Optional[str] = None) -> str:
+
+def git_tag_create(
+    repo: git.Repo,
+    tag_name: str,
+    message: Optional[str] = None,
+    commit: Optional[str] = None,
+) -> str:
     """
     Create a new tag.
 
@@ -598,13 +668,14 @@ def git_tag_create(repo: git.Repo, tag_name: str, message: Optional[str] = None,
     Returns:
         Tag creation output as string
     """
-    args = []
+    args: List[str] = []
     if message:
-        args.extend(['-m', message])
+        args.extend(["-m", message])
     if commit:
         args.append(commit)
-    
+
     return repo.git.tag(tag_name, *args)
+
 
 def git_tag_list(repo: git.Repo) -> List[Dict[str, Any]]:
     """
@@ -616,14 +687,18 @@ def git_tag_list(repo: git.Repo) -> List[Dict[str, Any]]:
     Returns:
         List of tag details
     """
-    tags = []
+    tags: List[Dict[str, str]] = []
     for tag in repo.tags:
-        tags.append({
+        tag_info: Dict[str, str] = {
             "name": tag.name,
             "commit": tag.commit.hexsha[:7],
-            "message": tag.tag.message if hasattr(tag, 'tag') and tag.tag else "",
-        })
+            "message": tag.tag.message
+            if hasattr(tag, "tag") and tag.tag
+            else "",
+        }
+        tags.append(tag_info)
     return tags
+
 
 def git_tag_delete(repo: git.Repo, tag_name: str) -> str:
     """
@@ -636,9 +711,12 @@ def git_tag_delete(repo: git.Repo, tag_name: str) -> str:
     Returns:
         Tag deletion output as string
     """
-    return repo.git.tag('-d', tag_name)
+    return repo.git.tag("-d", tag_name)
 
-def git_amend_commit(repo: git.Repo, message: Optional[str] = None, no_edit: bool = False) -> str:
+
+def git_amend_commit(
+    repo: git.Repo, message: Optional[str] = None, no_edit: bool = False
+) -> str:
     """
     Amend the last commit.
 
@@ -650,19 +728,25 @@ def git_amend_commit(repo: git.Repo, message: Optional[str] = None, no_edit: boo
     Returns:
         Amend commit output as string
     """
-    args = ['--amend']
-    
+    args: List[str] = ["--amend"]
+
     if no_edit:
-        args.append('--no-edit')
+        args.append("--no-edit")
     elif message:
-        args.extend(['-m', message])
-    
+        args.extend(["-m", message])
+
     try:
         return repo.git.commit(*args)
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error amending commit: {str(e)}"
 
-def git_blame(repo: git.Repo, file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None) -> str:
+
+def git_blame(
+    repo: git.Repo,
+    file_path: str,
+    start_line: Optional[int] = None,
+    end_line: Optional[int] = None,
+) -> str:
     """
     Show who last modified each line of a file.
 
@@ -675,14 +759,17 @@ def git_blame(repo: git.Repo, file_path: str, start_line: Optional[int] = None, 
     Returns:
         Blame output as string
     """
-    args = [file_path]
-    
+    args: List[str] = [file_path]
+
     if start_line is not None and end_line is not None:
-        args.append(f'-L {start_line},{end_line}')
-    
+        args.append(f"-L {start_line},{end_line}")
+
     return repo.git.blame(*args)
 
-def git_branch_delete(repo: git.Repo, branch_name: str, force: bool = False) -> str:
+
+def git_branch_delete(
+    repo: git.Repo, branch_name: str, force: bool = False
+) -> str:
     """
     Delete a branch.
 
@@ -694,13 +781,19 @@ def git_branch_delete(repo: git.Repo, branch_name: str, force: bool = False) -> 
     Returns:
         Branch deletion output as string
     """
-    arg = '-D' if force else '-d'
+    arg = "-D" if force else "-d"
     try:
         return repo.git.branch(arg, branch_name)
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error deleting branch: {str(e)}"
 
-def git_clean(repo: git.Repo, directories: bool = False, force: bool = False, dry_run: bool = True) -> str:
+
+def git_clean(
+    repo: git.Repo,
+    directories: bool = False,
+    force: bool = False,
+    dry_run: bool = True,
+) -> str:
     """
     Remove untracked files from the working tree.
 
@@ -713,17 +806,20 @@ def git_clean(repo: git.Repo, directories: bool = False, force: bool = False, dr
     Returns:
         Clean output as string
     """
-    args = []
+    args: List[str] = []
     if directories:
-        args.append('-d')
+        args.append("-d")
     if force:
-        args.append('-f')
+        args.append("-f")
     if dry_run:
-        args.append('-n')
-    
+        args.append("-n")
+
     return repo.git.clean(*args)
 
-def git_config_get(repo: git.Repo, key: str, global_config: bool = False) -> str:
+
+def git_config_get(
+    repo: git.Repo, key: str, global_config: bool = False
+) -> str:
     """
     Get a git configuration value.
 
@@ -735,16 +831,19 @@ def git_config_get(repo: git.Repo, key: str, global_config: bool = False) -> str
     Returns:
         Configuration value as string
     """
-    args = []
+    args: List[str] = []
     if global_config:
-        args.append('--global')
-    
+        args.append("--global")
+
     try:
         return repo.git.config(*args, key)
-    except GitCommandError:
+    except GitExcCommandError:
         return f"Config '{key}' not found"
 
-def git_config_set(repo: git.Repo, key: str, value: str, global_config: bool = False) -> str:
+
+def git_config_set(
+    repo: git.Repo, key: str, value: str, global_config: bool = False
+) -> str:
     """
     Set a git configuration value.
 
@@ -757,12 +856,13 @@ def git_config_set(repo: git.Repo, key: str, value: str, global_config: bool = F
     Returns:
         Confirmation message
     """
-    args = []
+    args: List[str] = []
     if global_config:
-        args.append('--global')
-    
+        args.append("--global")
+
     repo.git.config(*args, key, value)
     return f"Config '{key}' set to '{value}'"
+
 
 def git_reflog(repo: git.Repo, max_count: int = 10) -> List[Dict[str, Any]]:
     """
@@ -777,28 +877,30 @@ def git_reflog(repo: git.Repo, max_count: int = 10) -> List[Dict[str, Any]]:
     """
     # Format: <short-hash> <ref>@{<index>}: <action>: <message>
     reflog_pattern = r"([0-9a-f]+) ([^@]+)@\{(\d+)\}: ([^:]+): (.+)"
-    
+
     try:
         reflog_output = repo.git.reflog(f"-n {max_count}")
-        entries = []
-        
-        for line in reflog_output.split('\n'):
+        entries: List[Dict[str, Any]] = []
+
+        for line in reflog_output.split("\n"):
             if not line:
                 continue
-            
+
             match = re.match(reflog_pattern, line)
             if match:
-                entries.append({
+                entry: Dict[str, Any] = {
                     "hash": match.group(1),
                     "ref": match.group(2),
                     "index": int(match.group(3)),
                     "action": match.group(4),
-                    "message": match.group(5)
-                })
-        
+                    "message": match.group(5),
+                }
+                entries.append(entry)
+
         return entries
-    except GitCommandError as e:
+    except GitExcCommandError:
         return []
+
 
 def git_submodule_add(repo: git.Repo, repository: str, path: str) -> str:
     """
@@ -813,11 +915,14 @@ def git_submodule_add(repo: git.Repo, repository: str, path: str) -> str:
         Submodule add output as string
     """
     try:
-        return repo.git.submodule('add', repository, path)
-    except GitCommandError as e:
+        return repo.git.submodule("add", repository, path)
+    except GitExcCommandError as e:
         return f"Error adding submodule: {str(e)}"
 
-def git_submodule_update(repo: git.Repo, init: bool = True, recursive: bool = True) -> str:
+
+def git_submodule_update(
+    repo: git.Repo, init: bool = True, recursive: bool = True
+) -> str:
     """
     Update submodules.
 
@@ -829,13 +934,13 @@ def git_submodule_update(repo: git.Repo, init: bool = True, recursive: bool = Tr
     Returns:
         Submodule update output as string
     """
-    args = ['update']
+    args: List[str] = ["update"]
     if init:
-        args.append('--init')
+        args.append("--init")
     if recursive:
-        args.append('--recursive')
-    
+        args.append("--recursive")
+
     try:
         return repo.git.submodule(*args)
-    except GitCommandError as e:
+    except GitExcCommandError as e:
         return f"Error updating submodules: {str(e)}"

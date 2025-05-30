@@ -1,10 +1,10 @@
 from mcp.server.fastmcp import FastMCP
-from tools.note_tools import register_tools_note
-from tools.gmail_tools import register_tools_mail
-from tools.tasks_tools import register_tools_tasks
+
 from tools.calendar_tools import register_tools_calendar
 from tools.git_tools import register_tools_git
-
+from tools.gmail_tools import register_tools_mail
+from tools.note_tools import register_tools_note
+from tools.tasks_tools import register_tools_tasks
 
 mcp = FastMCP(
     "M.I.S.T.",

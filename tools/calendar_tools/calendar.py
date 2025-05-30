@@ -1,6 +1,7 @@
 """
 This module provides utilities for authenticating with and using the Google Calendar API.
 """
+
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
@@ -23,10 +24,10 @@ def get_calendar_service() -> Any:
 def list_calendars(service: Any) -> List[Dict[str, Any]]:
     """
     List all calendars the user has access to.
-    
+
     Args:
         service: Calendar API service instance
-        
+
     Returns:
         List of calendar objects
     """
@@ -35,16 +36,16 @@ def list_calendars(service: Any) -> List[Dict[str, Any]]:
 
 
 def get_events(
-    service: Any, 
-    calendar_id: str, 
+    service: Any,
+    calendar_id: str,
     max_results: int = 10,
     time_min: Optional[str] = None,
     time_max: Optional[str] = None,
-    search_query: Optional[str] = None
+    search_query: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     """
     Get events from a specific calendar.
-    
+
     Args:
         service: Calendar API service instance
         calendar_id: ID of the calendar to get events from
@@ -52,29 +53,33 @@ def get_events(
         time_min: Start time for events in RFC3339 format (default: now)
         time_max: End time for events in RFC3339 format
         search_query: Free text search terms to find events that match
-        
+
     Returns:
         List of event objects
     """
     # If no time_min provided, use current time
     if time_min is None:
-        time_min = datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
-    
+        from datetime import timezone
+
+        time_min = (
+            datetime.now(timezone.utc).isoformat() + "Z"
+        )  # 'Z' indicates UTC time
+
     # Build the request parameters
     request_params = {
         "calendarId": calendar_id,
         "maxResults": max_results,
         "singleEvents": True,
         "orderBy": "startTime",
-        "timeMin": time_min
+        "timeMin": time_min,
     }
-    
+
     # Add optional parameters if provided
     if time_max:
         request_params["timeMax"] = time_max
     if search_query:
         request_params["q"] = search_query
-    
+
     events_result = service.events().list(**request_params).execute()
     return events_result.get("items", [])
 
@@ -92,7 +97,7 @@ def create_event(
 ) -> Dict[str, Any]:
     """
     Create a new calendar event.
-    
+
     Args:
         service: Calendar API service instance
         calendar_id: ID of the calendar to create the event in
@@ -103,7 +108,7 @@ def create_event(
         location: Event location (optional)
         attendees: List of attendee email addresses or already formatted attendee dicts (optional)
         timezone: Timezone for the event (optional)
-        
+
     Returns:
         Created event object
     """
@@ -113,32 +118,46 @@ def create_event(
         "start": {"dateTime": start_datetime},
         "end": {"dateTime": end_datetime},
     }
-    
+
     # Add timezone if provided, default to UTC if not
-    timezone = timezone or "UTC"
-    event["start"]["timeZone"] = timezone
-    event["end"]["timeZone"] = timezone
-    
+    tz = timezone or "UTC"
+    if isinstance(event["start"], dict):
+        event["start"]["timeZone"] = tz
+    if isinstance(event["end"], dict):
+        event["end"]["timeZone"] = tz
+
     # Add optional fields if provided
     if description:
         event["description"] = description
     if location:
         event["location"] = location
-    
+
     # Add attendees if provided
     if attendees:
-        # Check if attendees are already formatted as dictionaries with email keys
-        if isinstance(attendees[0], dict) and "email" in attendees[0]:
-            event["attendees"] = attendees
+        # Process attendees list
+        attendee_list = []
+        if (
+            attendees
+            and isinstance(attendees[0], dict)
+            and "email" in attendees[0]
+        ):
+            attendee_list = attendees
         else:
-            event["attendees"] = [{"email": email} for email in attendees]
-    
+            attendee_list = [{"email": email} for email in attendees]
+
+        # Add to the event - need Dict type casting for proper type handling
+        event["attendees"] = attendee_list  # type: ignore
+
     # Create the event with notifications
-    return service.events().insert(
-        calendarId=calendar_id, 
-        body=event,
-        sendUpdates='all'  # Ensure notifications are sent to attendees
-    ).execute()
+    return (
+        service.events()
+        .insert(
+            calendarId=calendar_id,
+            body=event,
+            sendUpdates="all",  # Ensure notifications are sent to attendees
+        )
+        .execute()
+    )
 
 
 def update_event(
@@ -153,7 +172,7 @@ def update_event(
 ) -> Dict[str, Any]:
     """
     Update an existing calendar event.
-    
+
     Args:
         service: Calendar API service instance
         calendar_id: ID of the calendar containing the event
@@ -163,13 +182,15 @@ def update_event(
         end_datetime: New end time in RFC3339 format (optional)
         description: New event description (optional)
         location: New event location (optional)
-        
+
     Returns:
         Updated event object
     """
     # Get the current event
-    event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
-    
+    event = (
+        service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+    )
+
     # Update fields if provided
     if summary:
         event["summary"] = summary
@@ -181,17 +202,19 @@ def update_event(
         event["description"] = description
     if location:
         event["location"] = location
-    
+
     # Update the event
-    return service.events().update(
-        calendarId=calendar_id, eventId=event_id, body=event
-    ).execute()
+    return (
+        service.events()
+        .update(calendarId=calendar_id, eventId=event_id, body=event)
+        .execute()
+    )
 
 
 def delete_event(service: Any, calendar_id: str, event_id: str) -> None:
     """
     Delete a calendar event.
-    
+
     Args:
         service: Calendar API service instance
         calendar_id: ID of the calendar containing the event

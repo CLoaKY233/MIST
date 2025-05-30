@@ -7,10 +7,9 @@ It exposes Gmail messages as resources and provides tools for composing and send
 
 import re
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, List, Tuple
 
-
-from tools.gmail_tools.config import settings
+from tools.gmail_tools.config import settings as gmail_settings
 from tools.gmail_tools.gmail import (
     create_draft,
     get_gmail_service,
@@ -24,14 +23,13 @@ from tools.gmail_tools.gmail import (
     search_messages,
 )
 from tools.gmail_tools.gmail import send_email as gmail_send_email
-from tools.gmail_tools.gmail import get_gmail_service
 from tools.google_api import settings
 
 service = get_gmail_service()
 EMAIL_PREVIEW_LENGTH = 200
 
 
-def format_message(message):
+def format_message(message: Dict[str, Any]) -> str:
     """Format a Gmail message for display."""
     headers = get_headers_dict(message)
     body = parse_message_body(message)
@@ -52,7 +50,7 @@ Date: {date}
 """
 
 
-def validate_date_format(date_str):
+def validate_date_format(date_str: str) -> bool:
     """
     Validate that a date string is in the format YYYY/MM/DD.
 
@@ -121,8 +119,8 @@ def compose_email(
     to: str,
     subject: str,
     body: str,
-    cc: Optional[str] = None,
-    bcc: Optional[str] = None,
+    cc: str = "",
+    bcc: str = "",
 ) -> str:
     """
     Compose a new email draft.
@@ -131,8 +129,8 @@ def compose_email(
         to: Recipient email address
         subject: Email subject
         body: Email body content
-        cc: Carbon copy recipients (optional)
-        bcc: Blind carbon copy recipients (optional)
+        cc: Carbon copy recipients (defaults to empty string)
+        bcc: Blind carbon copy recipients (defaults to empty string)
 
     Returns:
         The ID of the created draft and its content
@@ -169,8 +167,8 @@ def send_email(
     to: str,
     subject: str,
     body: str,
-    cc: Optional[str] = None,
-    bcc: Optional[str] = None,
+    cc: str = "",
+    bcc: str = "",
 ) -> str:
     """
     Compose and send an email.
@@ -179,8 +177,8 @@ def send_email(
         to: Recipient email address
         subject: Email subject
         body: Email body content
-        cc: Carbon copy recipients (optional)
-        bcc: Blind carbon copy recipients (optional)
+        cc: Carbon copy recipients (defaults to empty string)
+        bcc: Blind carbon copy recipients (defaults to empty string)
 
     Returns:
         Content of the sent email
@@ -214,28 +212,28 @@ Body: {body[:EMAIL_PREVIEW_LENGTH]}{"..." if len(body) > EMAIL_PREVIEW_LENGTH el
 
 
 def search_emails(
-    from_email: Optional[str] = None,
-    to_email: Optional[str] = None,
-    subject: Optional[str] = None,
+    from_email: str = "",
+    to_email: str = "",
+    subject: str = "",
     has_attachment: bool = False,
     is_unread: bool = False,
-    after_date: Optional[str] = None,
-    before_date: Optional[str] = None,
-    label: Optional[str] = None,
+    after_date: str = "",
+    before_date: str = "",
+    label: str = "",
     max_results: int = 10,
 ) -> str:
     """
     Search for emails using specific search criteria.
 
     Args:
-        from_email: Filter by sender email
-        to_email: Filter by recipient email
-        subject: Filter by subject text
+        from_email: Filter by sender email (defaults to empty string)
+        to_email: Filter by recipient email (defaults to empty string)
+        subject: Filter by subject text (defaults to empty string)
         has_attachment: Filter for emails with attachments
         is_unread: Filter for unread emails
-        after_date: Filter for emails after this date (format: YYYY/MM/DD)
-        before_date: Filter for emails before this date (format: YYYY/MM/DD)
-        label: Filter by Gmail label
+        after_date: Filter for emails after this date (format: YYYY/MM/DD, defaults to empty string)
+        before_date: Filter for emails before this date (format: YYYY/MM/DD, defaults to empty string)
+        label: Filter by Gmail label (defaults to empty string)
         max_results: Maximum number of results to return
 
     Returns:
@@ -243,9 +241,7 @@ def search_emails(
     """
     # Validate date formats
     if after_date and not validate_date_format(after_date):
-        return (
-            f"Error: after_date '{after_date}' is not in the required format YYYY/MM/DD"
-        )
+        return f"Error: after_date '{after_date}' is not in the required format YYYY/MM/DD"
 
     if before_date and not validate_date_format(before_date):
         return f"Error: before_date '{before_date}' is not in the required format YYYY/MM/DD"
@@ -254,14 +250,14 @@ def search_emails(
     messages = search_messages(
         service,
         user_id=settings.user_id,
-        from_email=from_email,
-        to_email=to_email,
-        subject=subject,
+        from_email=from_email if from_email else None,
+        to_email=to_email if to_email else None,
+        subject=subject if subject else None,
         has_attachment=has_attachment,
         is_unread=is_unread,
-        after=after_date,
-        before=before_date,
-        labels=[label] if label else None,
+        after=after_date if after_date else None,
+        before=before_date if before_date else None,
+        labels=[label] if label and label.strip() else None,
         max_results=max_results,
     )
 
@@ -280,7 +276,7 @@ def search_emails(
         from_header = headers.get("From", "Unknown")
         subject_header = headers.get("Subject", "No Subject")
         date_header = headers.get("Date", "Unknown Date")
-        
+
         # Get snippet for preview
         snippet = message.get("snippet", "")
 
@@ -324,7 +320,7 @@ def query_emails(query: str, max_results: int = 10) -> str:
         from_header = headers.get("From", "Unknown")
         subject_header = headers.get("Subject", "No Subject")
         date_header = headers.get("Date", "Unknown Date")
-        
+
         # Get snippet for preview
         snippet = message.get("snippet", "")
 
@@ -484,12 +480,16 @@ def get_emails(message_ids: list[str]) -> str:
         return "No message IDs provided."
 
     # Fetch all emails first
-    retrieved_emails = []
-    error_emails = []
+    # Retrieve the initial message IDs
+    retrieved_emails: List[Tuple[str, Dict[str, Any]]] = []
+    error_emails: List[Tuple[str, str]] = []
 
+    # Try to get each message
     for msg_id in message_ids:
         try:
-            message = get_message(service, msg_id, user_id=settings.user_id)
+            message = get_message(
+                service, msg_id, user_id=gmail_settings.user_id
+            )
             retrieved_emails.append((msg_id, message))
         except Exception as e:
             error_emails.append((msg_id, str(e)))
@@ -512,7 +512,7 @@ def get_emails(message_ids: list[str]) -> str:
     return result
 
 
-def register_tools_mail(mcp):
+def register_tools_mail(mcp: Any) -> None:
     """Register all mail tools with the MCP server."""
     mcp.tool()(get_emails)
     mcp.tool()(remove_label_from_message)
@@ -524,5 +524,6 @@ def register_tools_mail(mcp):
     mcp.tool()(compose_email)
     mcp.tool()(mark_message_read)
 
+    # Register resources
     mcp.resource("gmail://threads/{thread_id}")(get_email_thread)
     mcp.resource("gmail://messages/{message_id}")(get_email_message)

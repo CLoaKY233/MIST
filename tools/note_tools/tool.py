@@ -1,10 +1,10 @@
 # tools/note_tools/tool.py
-import os
-import time
 import datetime
 import json
+import os
 import re
-from typing import List, Dict, Optional
+import time
+from typing import Any, Dict, List
 
 # Notes App Configuration
 NOTES_DIR = os.path.join(
@@ -32,7 +32,7 @@ def ensure_notes_directory():
 
 
 # Helper functions
-def get_note_index() -> List[Dict]:
+def get_note_index() -> List[Dict[str, Any]]:
     """Load the note index."""
     with open(INDEX_FILE, "r") as file:
         try:
@@ -41,13 +41,13 @@ def get_note_index() -> List[Dict]:
             return []
 
 
-def save_note_index(index: List[Dict]):
+def save_note_index(index: List[Dict[str, Any]]):
     """Save the note index."""
     with open(INDEX_FILE, "w") as file:
         json.dump(index, file, indent=2)
 
 
-def get_tags() -> Dict:
+def get_tags() -> Dict[str, List[str]]:
     """Load the tags index."""
     with open(TAGS_FILE, "r") as file:
         try:
@@ -56,7 +56,7 @@ def get_tags() -> Dict:
             return {}
 
 
-def save_tags(tags: Dict):
+def save_tags(tags: Dict[str, List[str]]):
     """Save the tags index."""
     with open(TAGS_FILE, "w") as file:
         json.dump(tags, file, indent=2)
@@ -69,7 +69,7 @@ def extract_tags(content: str) -> List[str]:
 
 def update_tags(note_id: str, tags: List[str]):
     """Update tags index with the given tags."""
-    tags_index = get_tags()
+    tags_index: Dict[str, List[str]] = get_tags()
 
     # Remove note_id from all existing tags
     for tag in tags_index.values():
@@ -90,14 +90,14 @@ def update_tags(note_id: str, tags: List[str]):
 
 
 # Tool functions to be registered with MCP
-def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
+def add_note(title: str, content: str, subject: str = "") -> str:
     """
     Create a new note with a title and content.
 
     Args:
         title (str): The title of the note.
         content (str): The content of the note.
-        subject (str, optional): The subject/category of the note.
+        subject (str): The subject/category of the note. Default is empty string.
 
     Returns:
         str: A success message with the created note ID.
@@ -109,7 +109,9 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
 
     # Sanitize title for filename
-    safe_title = re.sub(r"[^\w\s-]", "", title).strip().replace(" ", "-").lower()
+    safe_title = (
+        re.sub(r"[^\w\s-]", "", title).strip().replace(" ", "-").lower()
+    )
     note_id = f"{date_str}-{safe_title}-{timestamp}"
     filename = f"{note_id}.md"
     filepath = os.path.join(NOTES_DIR, filename)
@@ -123,14 +125,14 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
         "title": title,
         "created": timestamp,
         "modified": timestamp,
-        "subject": subject,
+        "subject": subject if subject else None,
         "tags": tags,
         "filename": filename,
     }
 
     # Add formatted header to content
     formatted_content = f"# {title}\n\nDate: {date_str}\n"
-    if subject:
+    if subject and subject.strip():
         formatted_content += f"Subject: {subject}\n"
     if tags:
         formatted_content += f"Tags: {', '.join(['#' + tag for tag in tags])}\n"
@@ -141,7 +143,7 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
         file.write(formatted_content)
 
     # Update index
-    index = get_note_index()
+    index: List[Dict[str, Any]] = get_note_index()
     index.append(metadata)
     save_note_index(index)
 
@@ -151,13 +153,13 @@ def add_note(title: str, content: str, subject: Optional[str] = None) -> str:
     return f"Note '{title}' saved with ID: {note_id}"
 
 
-def read_note(note_id: Optional[str] = None, title: Optional[str] = None) -> str:
+def read_note(note_id: str = "", title: str = "") -> str:
     """
     Read a note by its ID or title.
 
     Args:
-        note_id (str, optional): The ID of the note to read.
-        title (str, optional): The title of the note to read.
+        note_id (str): The ID of the note to read. Default is empty string.
+        title (str): The title of the note to read. Default is empty string.
 
     Returns:
         str: The content of the note or an error message.
@@ -167,15 +169,18 @@ def read_note(note_id: Optional[str] = None, title: Optional[str] = None) -> str
 
     # Find the note in the index
     note_meta = None
-    if note_id:
-        note_meta = next((note for note in index if note["id"] == note_id), None)
-    elif title:
+    if note_id and note_id.strip():
         note_meta = next(
-            (note for note in index if note["title"].lower() == title.lower()), None
+            (note for note in index if note["id"] == note_id), None
+        )
+    elif title and title.strip():
+        note_meta = next(
+            (note for note in index if note["title"].lower() == title.lower()),
+            None,
         )
 
     if not note_meta:
-        return f"Note not found. Please check the ID or title."
+        return "Note not found. Please check the ID or title."
 
     # Read the note content
     filepath = os.path.join(NOTES_DIR, note_meta["filename"])
@@ -188,15 +193,13 @@ def read_note(note_id: Optional[str] = None, title: Optional[str] = None) -> str
     return content
 
 
-def list_notes(
-    subject: Optional[str] = None, tag: Optional[str] = None, limit: int = 10
-) -> str:
+def list_notes(subject: str = "", tag: str = "", limit: int = 10) -> str:
     """
     List notes, optionally filtered by subject or tag.
 
     Args:
-        subject (str, optional): Filter notes by subject.
-        tag (str, optional): Filter notes by tag.
+        subject (str): Filter notes by subject. Default is empty string.
+        tag (str): Filter notes by tag. Default is empty string.
         limit (int): Maximum number of notes to return.
 
     Returns:
@@ -206,10 +209,10 @@ def list_notes(
     index = get_note_index()
 
     # Apply filters
-    if subject:
+    if subject and subject.strip():
         index = [note for note in index if note.get("subject") == subject]
 
-    if tag:
+    if tag and tag.strip():
         tags_index = get_tags()
         tag_notes = tags_index.get(tag, [])
         index = [note for note in index if note["id"] in tag_notes]
@@ -226,27 +229,29 @@ def list_notes(
     # Format the output
     output = "# Notes List\n\n"
     for i, note in enumerate(index, 1):
-        date = datetime.datetime.fromtimestamp(note["created"]).strftime("%Y-%m-%d")
+        date = datetime.datetime.fromtimestamp(note["created"]).strftime(
+            "%Y-%m-%d"
+        )
         output += f"{i}. **{note['title']}** ({date})\n"
         output += f"   ID: {note['id']}\n"
         if note.get("subject"):
             output += f"   Subject: {note['subject']}\n"
         if note.get("tags"):
-            output += f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
+            output += (
+                f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
+            )
         output += "\n"
 
     return output
 
 
-def generate_note_summary(
-    note_id: Optional[str] = None, title: Optional[str] = None
-) -> str:
+def generate_note_summary(note_id: str = "", title: str = "") -> str:
     """
     Generate a summary of a note by extracting key points.
 
     Args:
-        note_id (str, optional): The ID of the note to summarize.
-        title (str, optional): The title of the note to summarize.
+        note_id (str): The ID of the note to summarize. Default is empty string.
+        title (str): The title of the note to summarize. Default is empty string.
 
     Returns:
         str: A summary of the note or an error message.
@@ -320,7 +325,9 @@ def search_notes(query: str) -> str:
             results.extend(matching_notes)
     else:
         # Search in titles
-        title_matches = [note for note in index if query in note["title"].lower()]
+        title_matches = [
+            note for note in index if query in note["title"].lower()
+        ]
         results.extend(title_matches)
 
         # Search in content
@@ -343,13 +350,17 @@ def search_notes(query: str) -> str:
     # Format the output
     output = f"# Search Results for: {query}\n\n"
     for i, note in enumerate(results, 1):
-        date = datetime.datetime.fromtimestamp(note["created"]).strftime("%Y-%m-%d")
+        date = datetime.datetime.fromtimestamp(note["created"]).strftime(
+            "%Y-%m-%d"
+        )
         output += f"{i}. **{note['title']}** ({date})\n"
         output += f"   ID: {note['id']}\n"
         if note.get("subject"):
             output += f"   Subject: {note['subject']}\n"
         if note.get("tags"):
-            output += f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
+            output += (
+                f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
+            )
         output += "\n"
 
     return output
@@ -478,14 +489,16 @@ def organize_notes_by_subject() -> str:
     for subject, notes in sorted(subjects.items()):
         output += f"## {subject}\n\n"
         for note in notes:
-            date = datetime.datetime.fromtimestamp(note["created"]).strftime("%Y-%m-%d")
+            date = datetime.datetime.fromtimestamp(note["created"]).strftime(
+                "%Y-%m-%d"
+            )
             output += f"- **{note['title']}** ({date}) - ID: {note['id']}\n"
         output += "\n"
 
     return output
 
 
-def register_tools_note(mcp):
+def register_tools_note(mcp: Any):
     """Register all note tools with the MCP server."""
     mcp.tool()(add_note)
     mcp.tool()(read_note)

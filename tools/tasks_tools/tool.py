@@ -5,21 +5,19 @@ This module provides a Model Context Protocol server for interacting with Google
 It exposes Tasks as resources and provides tools for managing tasks and task lists.
 """
 
-from typing import Optional
+from typing import Any
 
 from tools.tasks_tools.tasks import (
+    complete_task,
+    create_task,
+    create_task_list,
+    delete_task,
+    delete_task_list,
+    get_tasks,
     get_tasks_service,
     list_task_lists,
-    get_tasks,
-    create_task,
     update_task,
-    delete_task,
-    complete_task,
-    create_task_list,
-    delete_task_list,
 )
-
-from tools.tasks_tools.tasks import get_tasks_service
 
 service = get_tasks_service()
 
@@ -96,8 +94,8 @@ def list_task_lists_tool() -> str:
 def create_task_tool(
     task_list_id: str,
     title: str,
-    notes: Optional[str] = None,
-    due: Optional[str] = None,
+    notes: str = "",
+    due: str = "",
 ) -> str:
     """
     Create a new task in a specified task list.
@@ -105,8 +103,8 @@ def create_task_tool(
     Args:
         task_list_id: ID of the task list
         title: Title of the new task
-        notes: Additional notes for the task (optional)
-        due: Due date for the task in RFC 3339 format (optional)
+        notes: Additional notes for the task (defaults to empty string)
+        due: Due date for the task in RFC 3339 format (defaults to empty string)
 
     Returns:
         Confirmation message with task details
@@ -124,9 +122,9 @@ Due: {due or "Not specified"}
 def update_task_tool(
     task_list_id: str,
     task_id: str,
-    title: Optional[str] = None,
-    notes: Optional[str] = None,
-    due: Optional[str] = None,
+    title: str = "",
+    notes: str = "",
+    due: str = "",
 ) -> str:
     """
     Update an existing task.
@@ -134,9 +132,9 @@ def update_task_tool(
     Args:
         task_list_id: ID of the task list
         task_id: ID of the task to update
-        title: New title for the task (optional)
-        notes: New notes for the task (optional)
-        due: New due date for the task in RFC 3339 format (optional)
+        title: New title for the task (defaults to empty string)
+        notes: New notes for the task (defaults to empty string)
+        due: New due date for the task in RFC 3339 format (defaults to empty string)
 
     Returns:
         Confirmation message with updated task details
@@ -165,9 +163,7 @@ def complete_task_tool(task_list_id: str, task_id: str) -> str:
         Confirmation message
     """
     task = complete_task(service, task_list_id, task_id)
-    return (
-        f"Task '{task.get('title', 'Untitled')}' (ID: {task_id}) marked as completed."
-    )
+    return f"Task '{task.get('title', 'Untitled')}' (ID: {task_id}) marked as completed."
 
 
 def delete_task_tool(task_list_id: str, task_id: str) -> str:
@@ -218,12 +214,9 @@ def delete_task_list_tool(task_list_id: str) -> str:
 
 
 # Register all tools with MCP
-def register_tools_tasks(mcp):
+def register_tools_tasks(mcp: Any):
     """
     Register all tasks tools with the MCP server.
-
-    Args:
-        mcp: The MCP server instance
     """
     # Register tools
     mcp.tool()(list_task_lists_tool)

@@ -5,51 +5,50 @@ This module provides a Model Context Protocol server for interacting with Git re
 It exposes Git commands as tools for AI assistants to use.
 """
 
-from typing import List, Dict, Any, Optional, Tuple
-import os
-import re
 from pathlib import Path
+from typing import Any, List
 
 from tools.git_tools.gitapi import (
     get_repo,
-    git_status,
-    git_diff_unstaged,
-    git_diff_staged,
-    git_diff,
-    git_commit,
     git_add,
-    git_reset,
-    git_log,
-    git_create_branch,
-    git_checkout,
-    git_show,
-    git_init,
-    git_branch_list,
-    git_remote_list,
-    git_stash_list,
-    git_remote_add,
-    git_pull,
-    git_push,
-    git_cherry_pick,
-    git_stash_save,
-    git_stash_apply,
-    git_stash_pop,
-    git_stash_drop,
-    git_rebase,
-    git_merge,
-    git_tag_create,
-    git_tag_list,
-    git_tag_delete,
     git_amend_commit,
     git_blame,
     git_branch_delete,
+    git_branch_list,
+    git_checkout,
+    git_cherry_pick,
     git_clean,
+    git_commit,
     git_config_get,
     git_config_set,
+    git_create_branch,
+    git_diff,
+    git_diff_staged,
+    git_diff_unstaged,
+    git_init,
+    git_log,
+    git_merge,
+    git_pull,
+    git_push,
+    git_rebase,
     git_reflog,
+    git_remote_add,
+    git_remote_list,
+    git_reset,
+    git_show,
+    git_stash_apply,
+    git_stash_drop,
+    git_stash_list,
+    git_stash_pop,
+    git_stash_save,
+    git_status,
     git_submodule_add,
     git_submodule_update,
+    git_tag_create,
+    git_tag_delete,
+    git_tag_list,
 )
+
 
 def status_tool(repo_path: str) -> str:
     """
@@ -67,6 +66,7 @@ def status_tool(repo_path: str) -> str:
         return f"Repository status for {repo_path}:\n\n{status}"
     except Exception as e:
         return f"Error getting repository status: {str(e)}"
+
 
 def diff_unstaged_tool(repo_path: str) -> str:
     """
@@ -87,6 +87,7 @@ def diff_unstaged_tool(repo_path: str) -> str:
     except Exception as e:
         return f"Error getting unstaged changes: {str(e)}"
 
+
 def diff_staged_tool(repo_path: str) -> str:
     """
     Show changes staged for commit.
@@ -105,6 +106,7 @@ def diff_staged_tool(repo_path: str) -> str:
         return f"Staged changes in {repo_path}:\n\n{diff}"
     except Exception as e:
         return f"Error getting staged changes: {str(e)}"
+
 
 def diff_tool(repo_path: str, target: str) -> str:
     """
@@ -126,6 +128,7 @@ def diff_tool(repo_path: str, target: str) -> str:
     except Exception as e:
         return f"Error getting diff: {str(e)}"
 
+
 def commit_tool(repo_path: str, message: str) -> str:
     """
     Record changes to the repository.
@@ -143,6 +146,7 @@ def commit_tool(repo_path: str, message: str) -> str:
         return result
     except Exception as e:
         return f"Error committing changes: {str(e)}"
+
 
 def add_tool(repo_path: str, files: List[str]) -> str:
     """
@@ -166,27 +170,28 @@ def add_tool(repo_path: str, files: List[str]) -> str:
             file_path = Path(file)
             # If it's already absolute, use it as is
             if file_path.is_absolute():
-                absolute_files.append(str(file_path))
+                absolute_files.append(str(file_path))  # type: ignore
             else:
                 # Otherwise, make it relative to the repo
                 absolute_files.append(str(repo_base / file_path))
 
-        result = git_add(repo, absolute_files)
+        result = git_add(repo, absolute_files)  # type: ignore
         return result
     except Exception as e:
         return f"Error adding files: {str(e)}"
 
-def reset_tool(repo_path: str, commit_ish: Optional[str] = None, mode: Optional[str] = None) -> str:
+
+def reset_tool(repo_path: str, commit_ish: str = "", mode: str = "") -> str:
     """
     Reset the current HEAD to a specified state or unstage files.
 
     Args:
         repo_path: Path to the Git repository
-        commit_ish: Optional. The commit to reset to (e.g., 'HEAD~1', commit hash).
-                If None and mode is not 'hard'/'soft'/'mixed' for current branch, it unstages all changes from the index.
-        mode: Optional. The reset mode. Can be 'soft', 'mixed', or 'hard'.
+        commit_ish: The commit to reset to (e.g., 'HEAD~1', commit hash).
+                If empty and mode is not 'hard'/'soft'/'mixed' for current branch, it unstages all changes from the index.
+        mode: The reset mode. Can be 'soft', 'mixed', or 'hard'.
               Defaults to 'mixed' if commit_ish is provided but mode is not.
-              If commit_ish is None and mode is None, it unstages all files (equivalent to `git reset`).
+              If commit_ish is empty and mode is empty, it unstages all files (equivalent to `git reset`).
               - 'soft': Index and working directory are not altered. Changes are left as "Changes to be committed".
               - 'mixed': Index is reset to the specified commit. Changes in the working directory are preserved but unstaged.
               - 'hard': Index and working directory are reset to the specified commit. All changes to tracked files are discarded.
@@ -200,6 +205,7 @@ def reset_tool(repo_path: str, commit_ish: Optional[str] = None, mode: Optional[
         return result
     except Exception as e:
         return f"Error resetting repository: {str(e)}"
+
 
 def log_tool(repo_path: str, max_count: int = 10) -> str:
     """
@@ -233,14 +239,17 @@ def log_tool(repo_path: str, max_count: int = 10) -> str:
     except Exception as e:
         return f"Error getting commit logs: {str(e)}"
 
-def create_branch_tool(repo_path: str, branch_name: str, base_branch: Optional[str] = None) -> str:
+
+def create_branch_tool(
+    repo_path: str, branch_name: str, base_branch: str = ""
+) -> str:
     """
     Create a new branch.
 
     Args:
         repo_path: Path to the Git repository
         branch_name: Name of the new branch
-        base_branch: Base branch name (optional)
+        base_branch: Base branch name (defaults to empty string)
 
     Returns:
         Confirmation message
@@ -251,6 +260,7 @@ def create_branch_tool(repo_path: str, branch_name: str, base_branch: Optional[s
         return result
     except Exception as e:
         return f"Error creating branch: {str(e)}"
+
 
 def checkout_tool(repo_path: str, branch_name: str) -> str:
     """
@@ -270,6 +280,7 @@ def checkout_tool(repo_path: str, branch_name: str) -> str:
     except Exception as e:
         return f"Error checking out branch: {str(e)}"
 
+
 def show_tool(repo_path: str, revision: str) -> str:
     """
     Show the contents of a commit.
@@ -288,6 +299,7 @@ def show_tool(repo_path: str, revision: str) -> str:
     except Exception as e:
         return f"Error showing revision: {str(e)}"
 
+
 def init_tool(repo_path: str) -> str:
     """
     Initialize a new Git repository.
@@ -303,6 +315,7 @@ def init_tool(repo_path: str) -> str:
         return result
     except Exception as e:
         return f"Error initializing repository: {str(e)}"
+
 
 def branch_list_tool(repo_path: str) -> str:
     """
@@ -324,14 +337,13 @@ def branch_list_tool(repo_path: str) -> str:
         result = f"Branches in {repo_path}:\n\n"
 
         for branch in branches:
-            active_marker = "* " if branch['is_active'] else "  "
-            result += (
-                f"{active_marker}{branch['name']} - {branch['commit']} - {branch['message']}\n"
-            )
+            active_marker = "* " if branch["is_active"] else "  "
+            result += f"{active_marker}{branch['name']} - {branch['commit']} - {branch['message']}\n"
 
         return result
     except Exception as e:
         return f"Error listing branches: {str(e)}"
+
 
 def remote_list_tool(repo_path: str) -> str:
     """
@@ -359,6 +371,7 @@ def remote_list_tool(repo_path: str) -> str:
     except Exception as e:
         return f"Error listing remotes: {str(e)}"
 
+
 def stash_list_tool(repo_path: str) -> str:
     """
     List all stashes.
@@ -385,6 +398,7 @@ def stash_list_tool(repo_path: str) -> str:
     except Exception as e:
         return f"Error listing stashes: {str(e)}"
 
+
 def remote_add_tool(repo_path: str, name: str, url: str) -> str:
     """
     Add a remote.
@@ -404,14 +418,15 @@ def remote_add_tool(repo_path: str, name: str, url: str) -> str:
     except Exception as e:
         return f"Error adding remote: {str(e)}"
 
-def pull_tool(repo_path: str, remote: str = "origin", branch: Optional[str] = None) -> str:
+
+def pull_tool(repo_path: str, remote: str = "origin", branch: str = "") -> str:
     """
     Pull changes from a remote.
 
     Args:
         repo_path: Path to the Git repository
         remote: Name of the remote
-        branch: Branch to pull (optional)
+        branch: Branch to pull (defaults to empty string)
 
     Returns:
         Pull output as string
@@ -424,14 +439,21 @@ def pull_tool(repo_path: str, remote: str = "origin", branch: Optional[str] = No
     except Exception as e:
         return f"Error pulling changes: {str(e)}"
 
-def push_tool(repo_path: str, remote: str = "origin", branch: Optional[str] = None, force: bool = False, tags: bool = False) -> str:
+
+def push_tool(
+    repo_path: str,
+    remote: str = "origin",
+    branch: str = "",
+    force: bool = False,
+    tags: bool = False,
+) -> str:
     """
     Push changes to a remote.
 
     Args:
         repo_path: Path to the Git repository
         remote: Name of the remote
-        branch: Branch to push (optional)
+        branch: Branch to push (defaults to empty string)
         force: Force push even when it results in a non-fast-forward merge
         tags: Push all tags to the remote
 
@@ -447,6 +469,7 @@ def push_tool(repo_path: str, remote: str = "origin", branch: Optional[str] = No
         return f"Pushed to {push_target}{force_info}{tags_info}:\n\n{result}"
     except Exception as e:
         return f"Error pushing changes: {str(e)}"
+
 
 def cherry_pick_tool(repo_path: str, commit_hash: str) -> str:
     """
@@ -467,13 +490,15 @@ def cherry_pick_tool(repo_path: str, commit_hash: str) -> str:
         return f"Error cherry-picking commit: {str(e)}"
 
 
-def stash_save_tool(repo_path: str, message: Optional[str] = None, include_untracked: bool = False) -> str:
+def stash_save_tool(
+    repo_path: str, message: str = "", include_untracked: bool = False
+) -> str:
     """
     Stash changes in the working directory.
 
     Args:
         repo_path: Path to the Git repository
-        message: Optional message for the stash
+        message: Message for the stash (defaults to empty string)
         include_untracked: Include untracked files in the stash
 
     Returns:
@@ -487,13 +512,15 @@ def stash_save_tool(repo_path: str, message: Optional[str] = None, include_untra
         return f"Error stashing changes: {str(e)}"
 
 
-def stash_apply_tool(repo_path: str, stash_id: Optional[str] = None, index: bool = False) -> str:
+def stash_apply_tool(
+    repo_path: str, stash_id: str = "", index: bool = False
+) -> str:
     """
     Apply a stashed state.
 
     Args:
         repo_path: Path to the Git repository
-        stash_id: Identifier of the stash to apply (e.g., 'stash@{0}')
+        stash_id: Identifier of the stash to apply (e.g., 'stash@{0}', defaults to empty string)
         index: Whether to restore the index state as well
 
     Returns:
@@ -509,13 +536,13 @@ def stash_apply_tool(repo_path: str, stash_id: Optional[str] = None, index: bool
         return f"Error applying stash: {str(e)}"
 
 
-def stash_pop_tool(repo_path: str, stash_id: Optional[str] = None) -> str:
+def stash_pop_tool(repo_path: str, stash_id: str = "") -> str:
     """
     Apply and remove a stashed state.
 
     Args:
         repo_path: Path to the Git repository
-        stash_id: Identifier of the stash to pop (e.g., 'stash@{0}')
+        stash_id: Identifier of the stash to pop (e.g., 'stash@{0}', defaults to empty string)
 
     Returns:
         Stash pop output as string
@@ -529,13 +556,13 @@ def stash_pop_tool(repo_path: str, stash_id: Optional[str] = None) -> str:
         return f"Error popping stash: {str(e)}"
 
 
-def stash_drop_tool(repo_path: str, stash_id: Optional[str] = None) -> str:
+def stash_drop_tool(repo_path: str, stash_id: str = "") -> str:
     """
     Remove a stashed state.
 
     Args:
         repo_path: Path to the Git repository
-        stash_id: Identifier of the stash to drop (e.g., 'stash@{0}')
+        stash_id: Identifier of the stash to drop (e.g., 'stash@{0}', defaults to empty string)
 
     Returns:
         Stash drop output as string
@@ -549,14 +576,19 @@ def stash_drop_tool(repo_path: str, stash_id: Optional[str] = None) -> str:
         return f"Error dropping stash: {str(e)}"
 
 
-def rebase_tool(repo_path: str, branch_or_commit: Optional[str] = None, interactive: bool = False, 
-               abort: bool = False, continue_rebase: bool = False) -> str:
+def rebase_tool(
+    repo_path: str,
+    branch_or_commit: str = "",
+    interactive: bool = False,
+    abort: bool = False,
+    continue_rebase: bool = False,
+) -> str:
     """
     Rebase the current branch onto another branch or commit.
 
     Args:
         repo_path: Path to the Git repository
-        branch_or_commit: Branch or commit to rebase onto
+        branch_or_commit: Branch or commit to rebase onto (defaults to empty string)
         interactive: Start an interactive rebase
         abort: Abort an in-progress rebase
         continue_rebase: Continue an in-progress rebase after resolving conflicts
@@ -566,18 +598,20 @@ def rebase_tool(repo_path: str, branch_or_commit: Optional[str] = None, interact
     """
     try:
         repo = get_repo(repo_path)
-        
+
         if abort and continue_rebase:
             return "Error: Cannot specify both abort and continue"
-        
+
         if (abort or continue_rebase) and branch_or_commit:
             return "Error: Cannot specify a branch/commit when aborting or continuing a rebase"
-            
+
         if not (abort or continue_rebase) and not branch_or_commit:
             return "Error: Must specify a branch or commit to rebase onto"
-            
-        result = git_rebase(repo, branch_or_commit or "", interactive, abort, continue_rebase)
-        
+
+        result = git_rebase(
+            repo, branch_or_commit or "", interactive, abort, continue_rebase
+        )
+
         if abort:
             return f"Rebase aborted:\n\n{result}"
         elif continue_rebase:
@@ -589,16 +623,22 @@ def rebase_tool(repo_path: str, branch_or_commit: Optional[str] = None, interact
         return f"Error during rebase: {str(e)}"
 
 
-def merge_tool(repo_path: str, branch: Optional[str] = None, strategy: Optional[str] = None,
-              commit_message: Optional[str] = None, no_ff: bool = False, abort: bool = False) -> str:
+def merge_tool(
+    repo_path: str,
+    branch: str = "",
+    strategy: str = "",
+    commit_message: str = "",
+    no_ff: bool = False,
+    abort: bool = False,
+) -> str:
     """
     Merge a branch into the current branch.
 
     Args:
         repo_path: Path to the Git repository
-        branch: Branch to merge
-        strategy: Merge strategy (e.g., 'recursive', 'resolve', 'octopus', 'ours', 'subtree')
-        commit_message: Custom commit message for the merge
+        branch: Branch to merge (defaults to empty string)
+        strategy: Merge strategy (e.g., 'recursive', 'resolve', 'octopus', 'ours', 'subtree') (defaults to empty string)
+        commit_message: Custom commit message for the merge (defaults to empty string)
         no_ff: Create a merge commit even if it's a fast-forward merge
         abort: Abort an in-progress merge
 
@@ -607,15 +647,17 @@ def merge_tool(repo_path: str, branch: Optional[str] = None, strategy: Optional[
     """
     try:
         repo = get_repo(repo_path)
-        
+
         if abort and branch:
             return "Error: Cannot specify a branch when aborting a merge"
-            
+
         if not abort and not branch:
             return "Error: Must specify a branch to merge"
-            
-        result = git_merge(repo, branch or "", strategy, commit_message, no_ff, abort)
-        
+
+        result = git_merge(
+            repo, branch or "", strategy, commit_message, no_ff, abort
+        )
+
         if abort:
             return f"Merge aborted:\n\n{result}"
         else:
@@ -626,22 +668,24 @@ def merge_tool(repo_path: str, branch: Optional[str] = None, strategy: Optional[
         return f"Error during merge: {str(e)}"
 
 
-def tag_create_tool(repo_path: str, tag_name: str, message: Optional[str] = None, commit: Optional[str] = None) -> str:
+def tag_create_tool(
+    repo_path: str, tag_name: str, message: str = "", commit: str = ""
+) -> str:
     """
     Create a new tag.
 
     Args:
         repo_path: Path to the Git repository
         tag_name: Name of the tag
-        message: Tag message (if not provided, creates a lightweight tag)
-        commit: Commit to tag (if not provided, tags the current commit)
+        message: Tag message (if empty, creates a lightweight tag) (defaults to empty string)
+        commit: Commit to tag (if empty, tags the current commit) (defaults to empty string)
 
     Returns:
         Tag creation output as string
     """
     try:
         repo = get_repo(repo_path)
-        result = git_tag_create(repo, tag_name, message, commit)
+        result = git_tag_create(repo, tag_name, message, commit)  # type: ignore
         tag_type = "annotated" if message else "lightweight"
         commit_info = f" at commit {commit}" if commit else " at current HEAD"
         return f"Created {tag_type} tag '{tag_name}'{commit_info}"
@@ -662,20 +706,20 @@ def tag_list_tool(repo_path: str) -> str:
     try:
         repo = get_repo(repo_path)
         tags = git_tag_list(repo)
-        
+
         if not tags:
             return "No tags found."
-            
+
         result = f"Tags in {repo_path}:\n\n"
-        
+
         for tag in tags:
             result += f"{tag['name']} - {tag['commit']}"
-            if tag['message']:
+            if tag["message"]:
                 # Show first line of tag message if it exists
-                message_first_line = tag['message'].split('\n')[0]
+                message_first_line = tag["message"].split("\n")[0]
                 result += f" - {message_first_line}"
             result += "\n"
-            
+
         return result
     except Exception as e:
         return f"Error listing tags: {str(e)}"
@@ -700,13 +744,15 @@ def tag_delete_tool(repo_path: str, tag_name: str) -> str:
         return f"Error deleting tag: {str(e)}"
 
 
-def amend_commit_tool(repo_path: str, message: Optional[str] = None, no_edit: bool = False) -> str:
+def amend_commit_tool(
+    repo_path: str, message: str = "", no_edit: bool = False
+) -> str:
     """
     Amend the last commit.
 
     Args:
         repo_path: Path to the Git repository
-        message: New commit message
+        message: New commit message (defaults to empty string)
         no_edit: Don't edit the commit message
 
     Returns:
@@ -714,63 +760,67 @@ def amend_commit_tool(repo_path: str, message: Optional[str] = None, no_edit: bo
     """
     try:
         repo = get_repo(repo_path)
-        
+
         if message and no_edit:
             return "Error: Cannot specify both message and no_edit"
-            
+
         result = git_amend_commit(repo, message, no_edit)
-        
+
         msg_info = ""
         if no_edit:
             msg_info = " (message unchanged)"
         elif message:
             msg_info = f" with message: '{message}'"
-            
+
         return f"Amended last commit{msg_info}:\n\n{result}"
     except Exception as e:
         return f"Error amending commit: {str(e)}"
 
 
-def blame_tool(repo_path: str, file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None) -> str:
+def blame_tool(
+    repo_path: str, file_path: str, start_line: int = 0, end_line: int = 0
+) -> str:
     """
     Show who last modified each line of a file.
 
     Args:
         repo_path: Path to the Git repository
         file_path: Path to the file
-        start_line: First line to show (1-based)
-        end_line: Last line to show (1-based)
+        start_line: First line to show (1-based, 0 means from beginning)
+        end_line: Last line to show (1-based, 0 means to the end)
 
     Returns:
         Blame output as string
     """
     try:
         repo = get_repo(repo_path)
-        
+
         # Convert absolute path to relative path within repo if needed
         repo_base = Path(repo_path)
         file_path_obj = Path(file_path)
-        
+
         if file_path_obj.is_absolute():
             try:
                 file_path = str(file_path_obj.relative_to(repo_base))
             except ValueError:
                 return f"Error: File {file_path} is not within repository {repo_path}"
-        
+
         result = git_blame(repo, file_path, start_line, end_line)
-        
+
         line_info = ""
         if start_line and end_line:
             line_info = f" (lines {start_line}-{end_line})"
         elif start_line:
             line_info = f" (from line {start_line})"
-            
+
         return f"Blame for {file_path}{line_info}:\n\n{result}"
     except Exception as e:
         return f"Error getting blame information: {str(e)}"
 
 
-def branch_delete_tool(repo_path: str, branch_name: str, force: bool = False) -> str:
+def branch_delete_tool(
+    repo_path: str, branch_name: str, force: bool = False
+) -> str:
     """
     Delete a branch.
 
@@ -785,14 +835,19 @@ def branch_delete_tool(repo_path: str, branch_name: str, force: bool = False) ->
     try:
         repo = get_repo(repo_path)
         result = git_branch_delete(repo, branch_name, force)
-        
+
         force_info = " forcefully" if force else ""
         return f"Deleted branch '{branch_name}'{force_info}:\n\n{result}"
     except Exception as e:
         return f"Error deleting branch: {str(e)}"
 
 
-def clean_tool(repo_path: str, directories: bool = False, force: bool = False, dry_run: bool = True) -> str:
+def clean_tool(
+    repo_path: str,
+    directories: bool = False,
+    force: bool = False,
+    dry_run: bool = True,
+) -> str:
     """
     Remove untracked files from the working tree.
 
@@ -808,16 +863,22 @@ def clean_tool(repo_path: str, directories: bool = False, force: bool = False, d
     try:
         repo = get_repo(repo_path)
         result = git_clean(repo, directories, force, dry_run)
-        
+
         dir_info = " and directories" if directories else ""
-        mode_info = "Would remove" if dry_run else ("Removed" if force else "Removing")
-        
-        return f"{mode_info} untracked files{dir_info} in {repo_path}:\n\n{result}"
+        mode_info = (
+            "Would remove" if dry_run else ("Removed" if force else "Removing")
+        )
+
+        return (
+            f"{mode_info} untracked files{dir_info} in {repo_path}:\n\n{result}"
+        )
     except Exception as e:
         return f"Error cleaning repository: {str(e)}"
 
 
-def config_get_tool(repo_path: str, key: str, global_config: bool = False) -> str:
+def config_get_tool(
+    repo_path: str, key: str, global_config: bool = False
+) -> str:
     """
     Get a git configuration value.
 
@@ -832,14 +893,16 @@ def config_get_tool(repo_path: str, key: str, global_config: bool = False) -> st
     try:
         repo = get_repo(repo_path)
         result = git_config_get(repo, key, global_config)
-        
+
         config_type = "global" if global_config else "local"
         return f"{config_type} config {key} = {result}"
     except Exception as e:
         return f"Error getting configuration: {str(e)}"
 
 
-def config_set_tool(repo_path: str, key: str, value: str, global_config: bool = False) -> str:
+def config_set_tool(
+    repo_path: str, key: str, value: str, global_config: bool = False
+) -> str:
     """
     Set a git configuration value.
 
@@ -854,8 +917,8 @@ def config_set_tool(repo_path: str, key: str, value: str, global_config: bool = 
     """
     try:
         repo = get_repo(repo_path)
-        result = git_config_set(repo, key, value, global_config)
-        
+        result = git_config_set(repo, key, value, global_config)  # type: ignore
+
         config_type = "global" if global_config else "local"
         return f"Set {config_type} config {key} = {value}"
     except Exception as e:
@@ -876,15 +939,15 @@ def reflog_tool(repo_path: str, max_count: int = 10) -> str:
     try:
         repo = get_repo(repo_path)
         entries = git_reflog(repo, max_count)
-        
+
         if not entries:
             return "No reflog entries found."
-            
+
         result = f"Reference log for {repo_path} (showing {len(entries)} entries):\n\n"
-        
+
         for entry in entries:
             result += f"{entry['hash']} {entry['ref']}@{{{entry['index']}}}: {entry['action']}: {entry['message']}\n"
-            
+
         return result
     except Exception as e:
         return f"Error getting reflog: {str(e)}"
@@ -910,7 +973,9 @@ def submodule_add_tool(repo_path: str, repository: str, path: str) -> str:
         return f"Error adding submodule: {str(e)}"
 
 
-def submodule_update_tool(repo_path: str, init: bool = True, recursive: bool = True) -> str:
+def submodule_update_tool(
+    repo_path: str, init: bool = True, recursive: bool = True
+) -> str:
     """
     Update submodules.
 
@@ -925,17 +990,17 @@ def submodule_update_tool(repo_path: str, init: bool = True, recursive: bool = T
     try:
         repo = get_repo(repo_path)
         result = git_submodule_update(repo, init, recursive)
-        
+
         init_info = " and initialize" if init else ""
         recursive_info = " recursively" if recursive else ""
-        
+
         return f"Updated{init_info} submodules{recursive_info}:\n\n{result}"
     except Exception as e:
         return f"Error updating submodules: {str(e)}"
 
 
 # Register all tools with MCP
-def register_tools_git(mcp):
+def register_tools_git(mcp: Any):
     """Register all git tools with the MCP server."""
     # Register basic tools
     mcp.tool()(status_tool)
@@ -956,7 +1021,7 @@ def register_tools_git(mcp):
     mcp.tool()(remote_add_tool)
     mcp.tool()(pull_tool)
     mcp.tool()(push_tool)
-    
+
     # Register advanced tools
     mcp.tool()(cherry_pick_tool)
     mcp.tool()(stash_save_tool)

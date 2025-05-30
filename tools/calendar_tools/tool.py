@@ -5,7 +5,7 @@ This module provides a Model Context Protocol server for interacting with Google
 It exposes Calendar events as resources and provides tools for managing calendars and events.
 """
 
-from typing import List
+from typing import Any, List, Optional
 
 from tools.calendar_tools.calendar import (
     create_event,
@@ -146,7 +146,7 @@ def create_event_tool(
     end_datetime: str,
     description: str = "",
     location: str = "",
-    attendees: List[str] = [],
+    attendees: Optional[List[str]] = None,
     timezone: str = "",
 ) -> str:
     """
@@ -173,7 +173,7 @@ def create_event_tool(
         end_datetime,
         description,
         location,
-        attendees,
+        attendees if attendees is not None else [],
         timezone,
     )
 
@@ -321,9 +321,6 @@ def search_events_tool(
         result += f"Event ID: {event.get('id')}\n"
 
     return result
-
-
-from typing import Any
 
 
 # Register all tools with MCP

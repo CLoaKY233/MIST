@@ -4,6 +4,8 @@ Common Google API client utilities for authentication and service creation.
 
 import json
 import os
+
+# Add these imports where needed
 from typing import Any, List, Union
 
 from google.auth.external_account_authorized_user import (
@@ -76,14 +78,14 @@ def get_credentials(
             # Check if credentials file exists
             if not os.path.exists(credentials_path):
                 raise FileNotFoundError(
-                    f"Credentials file not found at {credentials_path}. "
-                    "Please download your OAuth credentials from Google Cloud Console."
+                    f"""Credentials file not found at {credentials_path}. "
+                    Please download your OAuth credentials from Google Cloud Console."""
                 )
 
-            flow = InstalledAppFlow.from_client_secrets_file(
+            flow = InstalledAppFlow.from_client_secrets_file(  # type: ignore[misc]
                 credentials_path, scopes
-            )  # type: ignore
-            creds = flow.run_local_server(port=0)  # type: ignore
+            )
+            creds = flow.run_local_server(port=0)  # type: ignore[misc]
 
         # Save credentials for future runs
         token_json = json.loads(creds.to_json())  # type: ignore

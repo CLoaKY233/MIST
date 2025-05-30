@@ -6,6 +6,8 @@ It exposes Git commands as tools for AI assistants to use.
 """
 
 from pathlib import Path
+
+# Add these imports where needed
 from typing import Any, List
 
 from tools.git_tools.gitapi import (
@@ -164,18 +166,18 @@ def add_tool(repo_path: str, files: List[str]) -> str:
 
         # Convert relative paths to absolute paths within the repo
         repo_base = Path(repo_path)
-        absolute_files = []
+        absolute_files: List[str] = []  # Add explicit type annotation
 
         for file in files:
             file_path = Path(file)
             # If it's already absolute, use it as is
             if file_path.is_absolute():
-                absolute_files.append(str(file_path))  # type: ignore
+                absolute_files.append(str(file_path))
             else:
                 # Otherwise, make it relative to the repo
                 absolute_files.append(str(repo_base / file_path))
 
-        result = git_add(repo, absolute_files)  # type: ignore
+        result = git_add(repo, absolute_files)  # Remove type: ignore
         return result
     except Exception as e:
         return f"Error adding files: {str(e)}"
@@ -685,7 +687,7 @@ def tag_create_tool(
     """
     try:
         repo = get_repo(repo_path)
-        result = git_tag_create(repo, tag_name, message, commit)  # type: ignore
+        _result = git_tag_create(repo, tag_name, message, commit)  # type:ignore
         tag_type = "annotated" if message else "lightweight"
         commit_info = f" at commit {commit}" if commit else " at current HEAD"
         return f"Created {tag_type} tag '{tag_name}'{commit_info}"
@@ -917,7 +919,7 @@ def config_set_tool(
     """
     try:
         repo = get_repo(repo_path)
-        result = git_config_set(repo, key, value, global_config)  # type: ignore
+        _result = git_config_set(repo, key, value, global_config)  # type: ignore
 
         config_type = "global" if global_config else "local"
         return f"Set {config_type} config {key} = {value}"

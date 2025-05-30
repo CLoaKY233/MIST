@@ -2,10 +2,12 @@
 This module provides utilities for authenticating with and using the Google Calendar API.
 """
 
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, TypeAlias, Union
 
 from tools.google_api import get_google_service, settings
+
+CalendarService: TypeAlias = Any
 
 
 def get_calendar_service() -> Any:
@@ -59,8 +61,6 @@ def get_events(
     """
     # If no time_min provided, use current time
     if time_min is None:
-        from datetime import timezone
-
         time_min = (
             datetime.now(timezone.utc).isoformat() + "Z"
         )  # 'Z' indicates UTC time

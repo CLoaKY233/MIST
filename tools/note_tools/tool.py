@@ -1,10 +1,13 @@
-# tools/note_tools/tool.py
+"""
+Note management tools for creating, reading, updating, and deleting notes.
+"""
+
 import datetime
 import json
 import os
 import re
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, cast
 
 # Notes App Configuration
 NOTES_DIR = os.path.join(
@@ -13,9 +16,13 @@ NOTES_DIR = os.path.join(
 INDEX_FILE = os.path.join(NOTES_DIR, "index.json")
 TAGS_FILE = os.path.join(NOTES_DIR, "tags.json")
 
+# Type aliases for better type safety
+NoteMetadata = Dict[str, Any]
+TagsIndex = Dict[str, List[str]]
+TagsList = List[str]
 
-# Ensure the notes directory and index file exist
-def ensure_notes_directory():
+
+def ensure_notes_directory() -> None:
     """Create notes directory and required files if they don't exist."""
     if not os.path.exists(NOTES_DIR):
         os.makedirs(NOTES_DIR)
@@ -31,8 +38,7 @@ def ensure_notes_directory():
             json.dump({}, file)
 
 
-# Helper functions
-def get_note_index() -> List[Dict[str, Any]]:
+def get_note_index() -> List[NoteMetadata]:
     """Load the note index."""
     with open(INDEX_FILE, "r") as file:
         try:
@@ -41,13 +47,13 @@ def get_note_index() -> List[Dict[str, Any]]:
             return []
 
 
-def save_note_index(index: List[Dict[str, Any]]):
+def save_note_index(index: List[NoteMetadata]) -> None:
     """Save the note index."""
     with open(INDEX_FILE, "w") as file:
         json.dump(index, file, indent=2)
 
 
-def get_tags() -> Dict[str, List[str]]:
+def get_tags() -> TagsIndex:
     """Load the tags index."""
     with open(TAGS_FILE, "r") as file:
         try:
@@ -56,7 +62,7 @@ def get_tags() -> Dict[str, List[str]]:
             return {}
 
 
-def save_tags(tags: Dict[str, List[str]]):
+def save_tags(tags: TagsIndex) -> None:
     """Save the tags index."""
     with open(TAGS_FILE, "w") as file:
         json.dump(tags, file, indent=2)
@@ -64,17 +70,18 @@ def save_tags(tags: Dict[str, List[str]]):
 
 def extract_tags(content: str) -> List[str]:
     """Extract hashtags from content."""
-    return re.findall(r"#(\w+)", content)
+    # Return a list of strings explicitly to address type warnings
+    return cast(List[str], re.findall(r"#(\w+)", content))
 
 
-def update_tags(note_id: str, tags: List[str]):
+def update_tags(note_id: str, tags: List[str]) -> None:
     """Update tags index with the given tags."""
-    tags_index: Dict[str, List[str]] = get_tags()
+    tags_index: TagsIndex = get_tags()
 
     # Remove note_id from all existing tags
-    for tag in tags_index.values():
-        if note_id in tag:
-            tag.remove(note_id)
+    for tag_list in tags_index.values():
+        if note_id in tag_list:
+            tag_list.remove(note_id)
 
     # Add note_id to the appropriate tags
     for tag in tags:
@@ -89,18 +96,17 @@ def update_tags(note_id: str, tags: List[str]):
     save_tags(tags_index)
 
 
-# Tool functions to be registered with MCP
 def add_note(title: str, content: str, subject: str = "") -> str:
     """
     Create a new note with a title and content.
 
     Args:
-        title (str): The title of the note.
-        content (str): The content of the note.
-        subject (str): The subject/category of the note. Default is empty string.
+        title: The title of the note.
+        content: The content of the note.
+        subject: The subject/category of the note. Default is empty string.
 
     Returns:
-        str: A success message with the created note ID.
+        A success message with the created note ID.
     """
     ensure_notes_directory()
 
@@ -120,7 +126,7 @@ def add_note(title: str, content: str, subject: str = "") -> str:
     tags = extract_tags(content)
 
     # Create note metadata
-    metadata = {
+    metadata: NoteMetadata = {
         "id": note_id,
         "title": title,
         "created": timestamp,
@@ -143,7 +149,7 @@ def add_note(title: str, content: str, subject: str = "") -> str:
         file.write(formatted_content)
 
     # Update index
-    index: List[Dict[str, Any]] = get_note_index()
+    index: List[NoteMetadata] = get_note_index()
     index.append(metadata)
     save_note_index(index)
 
@@ -158,17 +164,17 @@ def read_note(note_id: str = "", title: str = "") -> str:
     Read a note by its ID or title.
 
     Args:
-        note_id (str): The ID of the note to read. Default is empty string.
-        title (str): The title of the note to read. Default is empty string.
+        note_id: The ID of the note to read. Default is empty string.
+        title: The title of the note to read. Default is empty string.
 
     Returns:
-        str: The content of the note or an error message.
+        The content of the note or an error message.
     """
     ensure_notes_directory()
     index = get_note_index()
 
     # Find the note in the index
-    note_meta = None
+    note_meta: Optional[NoteMetadata] = None
     if note_id and note_id.strip():
         note_meta = next(
             (note for note in index if note["id"] == note_id), None
@@ -198,12 +204,12 @@ def list_notes(subject: str = "", tag: str = "", limit: int = 10) -> str:
     List notes, optionally filtered by subject or tag.
 
     Args:
-        subject (str): Filter notes by subject. Default is empty string.
-        tag (str): Filter notes by tag. Default is empty string.
-        limit (int): Maximum number of notes to return.
+        subject: Filter notes by subject. Default is empty string.
+        tag: Filter notes by tag. Default is empty string.
+        limit: Maximum number of notes to return.
 
     Returns:
-        str: A formatted list of notes.
+        A formatted list of notes.
     """
     ensure_notes_directory()
     index = get_note_index()
@@ -229,17 +235,26 @@ def list_notes(subject: str = "", tag: str = "", limit: int = 10) -> str:
     # Format the output
     output = "# Notes List\n\n"
     for i, note in enumerate(index, 1):
-        date = datetime.datetime.fromtimestamp(note["created"]).strftime(
-            "%Y-%m-%d"
-        )
+        created_timestamp = note["created"]
+        if isinstance(created_timestamp, (int, float)):
+            date = datetime.datetime.fromtimestamp(created_timestamp).strftime(
+                "%Y-%m-%d"
+            )
+        else:
+            date = "Unknown"
+
         output += f"{i}. **{note['title']}** ({date})\n"
         output += f"   ID: {note['id']}\n"
         if note.get("subject"):
             output += f"   Subject: {note['subject']}\n"
         if note.get("tags"):
-            output += (
-                f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
-            )
+            tags_list = note["tags"]
+            if isinstance(tags_list, list):
+                # Format tags list without using list comprehension to avoid type warnings
+                tags_str = ", ".join(
+                    [f"#{str(t)}" for t in cast(List[Any], tags_list)]
+                )
+                output += f"   Tags: {tags_str}\n"
         output += "\n"
 
     return output
@@ -250,11 +265,11 @@ def generate_note_summary(note_id: str = "", title: str = "") -> str:
     Generate a summary of a note by extracting key points.
 
     Args:
-        note_id (str): The ID of the note to summarize. Default is empty string.
-        title (str): The title of the note to summarize. Default is empty string.
+        note_id: The ID of the note to summarize. Default is empty string.
+        title: The title of the note to summarize. Default is empty string.
 
     Returns:
-        str: A summary of the note or an error message.
+        A summary of the note or an error message.
     """
     # First read the note
     note_content = read_note(note_id, title)
@@ -272,7 +287,7 @@ def generate_note_summary(note_id: str = "", title: str = "") -> str:
 
     # Extract the first sentence of each paragraph as key points
     paragraphs = re.split(r"\n\n+", note_content)
-    first_sentences = []
+    first_sentences: List[str] = []
     for para in paragraphs:
         if para.startswith("#") or not para.strip():
             continue
@@ -303,14 +318,14 @@ def search_notes(query: str) -> str:
     Search notes for a specific query string.
 
     Args:
-        query (str): The search query.
+        query: The search query.
 
     Returns:
-        str: A list of notes matching the search query.
+        A list of notes matching the search query.
     """
     ensure_notes_directory()
     index = get_note_index()
-    results = []
+    results: List[NoteMetadata] = []
 
     query = query.lower()
 
@@ -341,7 +356,7 @@ def search_notes(query: str) -> str:
                     content = file.read().lower()
                     if query in content:
                         results.append(note)
-            except:
+            except (IOError, OSError, UnicodeDecodeError):
                 continue
 
     if not results:
@@ -350,17 +365,26 @@ def search_notes(query: str) -> str:
     # Format the output
     output = f"# Search Results for: {query}\n\n"
     for i, note in enumerate(results, 1):
-        date = datetime.datetime.fromtimestamp(note["created"]).strftime(
-            "%Y-%m-%d"
-        )
+        created_timestamp = note["created"]
+        if isinstance(created_timestamp, (int, float)):
+            date = datetime.datetime.fromtimestamp(created_timestamp).strftime(
+                "%Y-%m-%d"
+            )
+        else:
+            date = "Unknown"
+
         output += f"{i}. **{note['title']}** ({date})\n"
         output += f"   ID: {note['id']}\n"
         if note.get("subject"):
             output += f"   Subject: {note['subject']}\n"
         if note.get("tags"):
-            output += (
-                f"   Tags: {', '.join(['#' + tag for tag in note['tags']])}\n"
-            )
+            tags_list = note["tags"]
+            if isinstance(tags_list, list):
+                # Format tags list without using list comprehension to avoid type warnings
+                tags_str = ", ".join(
+                    [f"#{str(t)}" for t in cast(List[Any], tags_list)]
+                )
+                output += f"   Tags: {tags_str}\n"
         output += "\n"
 
     return output
@@ -371,17 +395,19 @@ def edit_note(note_id: str, new_content: str) -> str:
     Edit an existing note.
 
     Args:
-        note_id (str): The ID of the note to edit.
-        new_content (str): The new content for the note.
+        note_id: The ID of the note to edit.
+        new_content: The new content for the note.
 
     Returns:
-        str: A success message or an error message.
+        A success message or an error message.
     """
     ensure_notes_directory()
     index = get_note_index()
 
     # Find the note in the index
-    note_meta = next((note for note in index if note["id"] == note_id), None)
+    note_meta: Optional[NoteMetadata] = next(
+        (note for note in index if note["id"] == note_id), None
+    )
     if not note_meta:
         return f"Note not found with ID: {note_id}"
 
@@ -398,9 +424,14 @@ def edit_note(note_id: str, new_content: str) -> str:
         return f"Note file not found: {filepath}"
 
     # Add formatted header to content
-    date_str = datetime.datetime.fromtimestamp(note_meta["created"]).strftime(
-        "%Y-%m-%d"
-    )
+    created_timestamp = note_meta["created"]
+    if isinstance(created_timestamp, (int, float)):
+        date_str = datetime.datetime.fromtimestamp(created_timestamp).strftime(
+            "%Y-%m-%d"
+        )
+    else:
+        date_str = "Unknown"
+
     formatted_content = f"# {note_meta['title']}\n\nDate: {date_str}\n"
     if note_meta.get("subject"):
         formatted_content += f"Subject: {note_meta['subject']}\n"
@@ -430,16 +461,18 @@ def delete_note(note_id: str) -> str:
     Delete a note by its ID.
 
     Args:
-        note_id (str): The ID of the note to delete.
+        note_id: The ID of the note to delete.
 
     Returns:
-        str: A success message or an error message.
+        A success message or an error message.
     """
     ensure_notes_directory()
     index = get_note_index()
 
     # Find the note in the index
-    note_meta = next((note for note in index if note["id"] == note_id), None)
+    note_meta: Optional[NoteMetadata] = next(
+        (note for note in index if note["id"] == note_id), None
+    )
     if not note_meta:
         return f"Note not found with ID: {note_id}"
 
@@ -454,7 +487,7 @@ def delete_note(note_id: str) -> str:
 
     # Update tags
     tags_index = get_tags()
-    for tag, notes in tags_index.items():
+    for _tag, notes in tags_index.items():
         if note_id in notes:
             notes.remove(note_id)
     save_tags(tags_index)
@@ -467,13 +500,13 @@ def organize_notes_by_subject() -> str:
     Create a summary of notes organized by subject.
 
     Returns:
-        str: A summary of notes organized by subject.
+        A summary of notes organized by subject.
     """
     ensure_notes_directory()
     index = get_note_index()
 
     # Group notes by subject
-    subjects = {}
+    subjects: Dict[str, List[NoteMetadata]] = {}
     for note in index:
         subject = note.get("subject") or "Uncategorized"
         if subject not in subjects:
@@ -481,24 +514,33 @@ def organize_notes_by_subject() -> str:
         subjects[subject].append(note)
 
     # Sort notes within each subject by creation time (newest first)
-    for subject in subjects:
-        subjects[subject].sort(key=lambda x: x["created"], reverse=True)
+    for subject_name in subjects:
+        subjects[subject_name].sort(
+            key=lambda x: x["created"]
+            if isinstance(x["created"], (int, float))
+            else 0,
+            reverse=True,
+        )
 
     # Format the output
     output = "# Notes Organized by Subject\n\n"
-    for subject, notes in sorted(subjects.items()):
-        output += f"## {subject}\n\n"
+    for subject_name, notes in sorted(subjects.items()):
+        output += f"## {subject_name}\n\n"
         for note in notes:
-            date = datetime.datetime.fromtimestamp(note["created"]).strftime(
-                "%Y-%m-%d"
-            )
+            created_timestamp = note["created"]
+            if isinstance(created_timestamp, (int, float)):
+                date = datetime.datetime.fromtimestamp(
+                    created_timestamp
+                ).strftime("%Y-%m-%d")
+            else:
+                date = "Unknown"
             output += f"- **{note['title']}** ({date}) - ID: {note['id']}\n"
         output += "\n"
 
     return output
 
 
-def register_tools_note(mcp: Any):
+def register_tools_note(mcp: Any) -> None:
     """Register all note tools with the MCP server."""
     mcp.tool()(add_note)
     mcp.tool()(read_note)

@@ -163,7 +163,9 @@ def complete_task_tool(task_list_id: str, task_id: str) -> str:
         Confirmation message
     """
     task = complete_task(service, task_list_id, task_id)
-    return f"Task '{task.get('title', 'Untitled')}' (ID: {task_id}) marked as completed."
+    return (
+        f"Task '{task.get('title', 'Untitled')}' (ID: {task_id}) marked as completed."
+    )
 
 
 def delete_task_tool(task_list_id: str, task_id: str) -> str:

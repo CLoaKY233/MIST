@@ -242,9 +242,7 @@ def log_tool(repo_path: str, max_count: int = 10) -> str:
         return f"Error getting commit logs: {str(e)}"
 
 
-def create_branch_tool(
-    repo_path: str, branch_name: str, base_branch: str = ""
-) -> str:
+def create_branch_tool(repo_path: str, branch_name: str, base_branch: str = "") -> str:
     """
     Create a new branch.
 
@@ -514,9 +512,7 @@ def stash_save_tool(
         return f"Error stashing changes: {str(e)}"
 
 
-def stash_apply_tool(
-    repo_path: str, stash_id: str = "", index: bool = False
-) -> str:
+def stash_apply_tool(repo_path: str, stash_id: str = "", index: bool = False) -> str:
     """
     Apply a stashed state.
 
@@ -656,9 +652,7 @@ def merge_tool(
         if not abort and not branch:
             return "Error: Must specify a branch to merge"
 
-        result = git_merge(
-            repo, branch or "", strategy, commit_message, no_ff, abort
-        )
+        result = git_merge(repo, branch or "", strategy, commit_message, no_ff, abort)
 
         if abort:
             return f"Merge aborted:\n\n{result}"
@@ -746,9 +740,7 @@ def tag_delete_tool(repo_path: str, tag_name: str) -> str:
         return f"Error deleting tag: {str(e)}"
 
 
-def amend_commit_tool(
-    repo_path: str, message: str = "", no_edit: bool = False
-) -> str:
+def amend_commit_tool(repo_path: str, message: str = "", no_edit: bool = False) -> str:
     """
     Amend the last commit.
 
@@ -820,9 +812,7 @@ def blame_tool(
         return f"Error getting blame information: {str(e)}"
 
 
-def branch_delete_tool(
-    repo_path: str, branch_name: str, force: bool = False
-) -> str:
+def branch_delete_tool(repo_path: str, branch_name: str, force: bool = False) -> str:
     """
     Delete a branch.
 
@@ -867,20 +857,14 @@ def clean_tool(
         result = git_clean(repo, directories, force, dry_run)
 
         dir_info = " and directories" if directories else ""
-        mode_info = (
-            "Would remove" if dry_run else ("Removed" if force else "Removing")
-        )
+        mode_info = "Would remove" if dry_run else ("Removed" if force else "Removing")
 
-        return (
-            f"{mode_info} untracked files{dir_info} in {repo_path}:\n\n{result}"
-        )
+        return f"{mode_info} untracked files{dir_info} in {repo_path}:\n\n{result}"
     except Exception as e:
         return f"Error cleaning repository: {str(e)}"
 
 
-def config_get_tool(
-    repo_path: str, key: str, global_config: bool = False
-) -> str:
+def config_get_tool(repo_path: str, key: str, global_config: bool = False) -> str:
     """
     Get a git configuration value.
 

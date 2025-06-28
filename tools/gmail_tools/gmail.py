@@ -138,9 +138,7 @@ def parse_message_body(message: Dict[str, Any]) -> str:
         for part in parts:
             if part["mimeType"] == "text/plain":
                 if "data" in part["body"]:
-                    text += base64.urlsafe_b64decode(
-                        part["body"]["data"]
-                    ).decode()
+                    text += base64.urlsafe_b64decode(part["body"]["data"]).decode()
             elif "parts" in part:
                 text += get_text_part(part["parts"])
         return text
@@ -199,9 +197,7 @@ def send_email(
         Sent message object
     """
     message = create_message(sender, to, subject, body, cc, bcc)
-    return (
-        service.users().messages().send(userId=user_id, body=message).execute()
-    )
+    return service.users().messages().send(userId=user_id, body=message).execute()
 
 
 def get_labels(
@@ -349,9 +345,7 @@ def get_message(
     Returns:
         Message object
     """
-    message = (
-        service.users().messages().get(userId=user_id, id=message_id).execute()
-    )
+    message = service.users().messages().get(userId=user_id, id=message_id).execute()
     return message
 
 
@@ -369,9 +363,7 @@ def get_thread(
     Returns:
         Thread object
     """
-    thread = (
-        service.users().threads().get(userId=user_id, id=thread_id).execute()
-    )
+    thread = service.users().threads().get(userId=user_id, id=thread_id).execute()
     return thread
 
 
@@ -403,12 +395,7 @@ def create_draft(
     """
     message = create_message(sender, to, subject, body, cc, bcc)
     draft_body = {"message": message}
-    return (
-        service.users()
-        .drafts()
-        .create(userId=user_id, body=draft_body)
-        .execute()
-    )
+    return service.users().drafts().create(userId=user_id, body=draft_body).execute()
 
 
 def list_drafts(
@@ -426,10 +413,7 @@ def list_drafts(
         List of draft objects
     """
     response = (
-        service.users()
-        .drafts()
-        .list(userId=user_id, maxResults=max_results)
-        .execute()
+        service.users().drafts().list(userId=user_id, maxResults=max_results).execute()
     )
     drafts = response.get("drafts", [])
     return drafts
@@ -495,12 +479,7 @@ def create_label(
         "messageListVisibility": "show",
         "type": label_type,
     }
-    return (
-        service.users()
-        .labels()
-        .create(userId=user_id, body=label_body)
-        .execute()
-    )
+    return service.users().labels().create(userId=user_id, body=label_body).execute()
 
 
 def update_label(
@@ -635,12 +614,7 @@ def trash_message(
     Returns:
         Updated message object
     """
-    return (
-        service.users()
-        .messages()
-        .trash(userId=user_id, id=message_id)
-        .execute()
-    )
+    return service.users().messages().trash(userId=user_id, id=message_id).execute()
 
 
 def untrash_message(
@@ -657,12 +631,7 @@ def untrash_message(
     Returns:
         Updated message object
     """
-    return (
-        service.users()
-        .messages()
-        .untrash(userId=user_id, id=message_id)
-        .execute()
-    )
+    return service.users().messages().untrash(userId=user_id, id=message_id).execute()
 
 
 def get_message_history(

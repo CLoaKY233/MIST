@@ -136,11 +136,7 @@ def create_event(
     if attendees:
         # Process attendees list
         attendee_list = []
-        if (
-            attendees
-            and isinstance(attendees[0], dict)
-            and "email" in attendees[0]
-        ):
+        if attendees and isinstance(attendees[0], dict) and "email" in attendees[0]:
             attendee_list = attendees
         else:
             attendee_list = [{"email": email} for email in attendees]
@@ -187,9 +183,7 @@ def update_event(
         Updated event object
     """
     # Get the current event
-    event = (
-        service.events().get(calendarId=calendar_id, eventId=event_id).execute()
-    )
+    event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
 
     # Update fields if provided
     if summary:

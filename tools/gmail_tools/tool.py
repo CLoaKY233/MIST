@@ -241,7 +241,9 @@ def search_emails(
     """
     # Validate date formats
     if after_date and not validate_date_format(after_date):
-        return f"Error: after_date '{after_date}' is not in the required format YYYY/MM/DD"
+        return (
+            f"Error: after_date '{after_date}' is not in the required format YYYY/MM/DD"
+        )
 
     if before_date and not validate_date_format(before_date):
         return f"Error: before_date '{before_date}' is not in the required format YYYY/MM/DD"
@@ -487,9 +489,7 @@ def get_emails(message_ids: list[str]) -> str:
     # Try to get each message
     for msg_id in message_ids:
         try:
-            message = get_message(
-                service, msg_id, user_id=gmail_settings.user_id
-            )
+            message = get_message(service, msg_id, user_id=gmail_settings.user_id)
             retrieved_emails.append((msg_id, message))
         except Exception as e:
             error_emails.append((msg_id, str(e)))

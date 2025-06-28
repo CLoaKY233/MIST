@@ -115,9 +115,7 @@ def add_note(title: str, content: str, subject: str = "") -> str:
     date_str = datetime.datetime.now().strftime("%Y-%m-%d")
 
     # Sanitize title for filename
-    safe_title = (
-        re.sub(r"[^\w\s-]", "", title).strip().replace(" ", "-").lower()
-    )
+    safe_title = re.sub(r"[^\w\s-]", "", title).strip().replace(" ", "-").lower()
     note_id = f"{date_str}-{safe_title}-{timestamp}"
     filename = f"{note_id}.md"
     filepath = os.path.join(NOTES_DIR, filename)
@@ -176,9 +174,7 @@ def read_note(note_id: str = "", title: str = "") -> str:
     # Find the note in the index
     note_meta: Optional[NoteMetadata] = None
     if note_id and note_id.strip():
-        note_meta = next(
-            (note for note in index if note["id"] == note_id), None
-        )
+        note_meta = next((note for note in index if note["id"] == note_id), None)
     elif title and title.strip():
         note_meta = next(
             (note for note in index if note["title"].lower() == title.lower()),
@@ -251,9 +247,7 @@ def list_notes(subject: str = "", tag: str = "", limit: int = 10) -> str:
             tags_list = note["tags"]
             if isinstance(tags_list, list):
                 # Format tags list without using list comprehension to avoid type warnings
-                tags_str = ", ".join(
-                    [f"#{str(t)}" for t in cast(List[Any], tags_list)]
-                )
+                tags_str = ", ".join([f"#{str(t)}" for t in cast(List[Any], tags_list)])
                 output += f"   Tags: {tags_str}\n"
         output += "\n"
 
@@ -340,9 +334,7 @@ def search_notes(query: str) -> str:
             results.extend(matching_notes)
     else:
         # Search in titles
-        title_matches = [
-            note for note in index if query in note["title"].lower()
-        ]
+        title_matches = [note for note in index if query in note["title"].lower()]
         results.extend(title_matches)
 
         # Search in content
@@ -381,9 +373,7 @@ def search_notes(query: str) -> str:
             tags_list = note["tags"]
             if isinstance(tags_list, list):
                 # Format tags list without using list comprehension to avoid type warnings
-                tags_str = ", ".join(
-                    [f"#{str(t)}" for t in cast(List[Any], tags_list)]
-                )
+                tags_str = ", ".join([f"#{str(t)}" for t in cast(List[Any], tags_list)])
                 output += f"   Tags: {tags_str}\n"
         output += "\n"
 
@@ -516,9 +506,7 @@ def organize_notes_by_subject() -> str:
     # Sort notes within each subject by creation time (newest first)
     for subject_name in subjects:
         subjects[subject_name].sort(
-            key=lambda x: x["created"]
-            if isinstance(x["created"], (int, float))
-            else 0,
+            key=lambda x: x["created"] if isinstance(x["created"], (int, float)) else 0,
             reverse=True,
         )
 
@@ -529,9 +517,9 @@ def organize_notes_by_subject() -> str:
         for note in notes:
             created_timestamp = note["created"]
             if isinstance(created_timestamp, (int, float)):
-                date = datetime.datetime.fromtimestamp(
-                    created_timestamp
-                ).strftime("%Y-%m-%d")
+                date = datetime.datetime.fromtimestamp(created_timestamp).strftime(
+                    "%Y-%m-%d"
+                )
             else:
                 date = "Unknown"
             output += f"- **{note['title']}** ({date}) - ID: {note['id']}\n"

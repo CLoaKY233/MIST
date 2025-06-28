@@ -71,9 +71,7 @@ def get_calendar_event(calendar_id: str, event_id: str) -> str:
     Returns:
         Formatted string with event details
     """
-    event = (
-        service.events().get(calendarId=calendar_id, eventId=event_id).execute()
-    )
+    event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
 
     result = f"Event (ID: {event_id})\n"
     result += f"Title: {event.get('summary', 'Untitled')}\n"
@@ -290,9 +288,7 @@ def search_events_tool(
     Returns:
         Formatted list of matching events
     """
-    events = get_events(
-        service, calendar_id, max_results, time_min, time_max, query
-    )
+    events = get_events(service, calendar_id, max_results, time_min, time_max, query)
 
     result = f"Search results for '{query}' in calendar {calendar_id}:\n"
 
@@ -334,9 +330,7 @@ def register_tools_calendar(mcp: Any):
     mcp.tool()(search_events_tool)
 
     # Register resources
-    mcp.resource("calendar://calendars/{calendar_id}/events")(
-        get_calendar_events
-    )
+    mcp.resource("calendar://calendars/{calendar_id}/events")(get_calendar_events)
     mcp.resource("calendar://calendars/{calendar_id}/events/{event_id}")(
         get_calendar_event
     )

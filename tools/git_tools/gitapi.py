@@ -146,9 +146,7 @@ def git_add(repo: git.Repo, files: List[str]) -> str:
     try:
         # Check if files exist before adding
         non_existent = [
-            f
-            for f in files
-            if not os.path.exists(os.path.join(repo.working_dir, f))
+            f for f in files if not os.path.exists(os.path.join(repo.working_dir, f))
         ]
         if non_existent:
             return f"Error: The following files do not exist: {', '.join(non_existent)}"
@@ -692,9 +690,7 @@ def git_tag_list(repo: git.Repo) -> List[Dict[str, Any]]:
         tag_info: Dict[str, str] = {
             "name": tag.name,
             "commit": tag.commit.hexsha[:7],
-            "message": tag.tag.message
-            if hasattr(tag, "tag") and tag.tag
-            else "",
+            "message": tag.tag.message if hasattr(tag, "tag") and tag.tag else "",
         }
         tags.append(tag_info)
     return tags
@@ -767,9 +763,7 @@ def git_blame(
     return repo.git.blame(*args)
 
 
-def git_branch_delete(
-    repo: git.Repo, branch_name: str, force: bool = False
-) -> str:
+def git_branch_delete(repo: git.Repo, branch_name: str, force: bool = False) -> str:
     """
     Delete a branch.
 
@@ -817,9 +811,7 @@ def git_clean(
     return repo.git.clean(*args)
 
 
-def git_config_get(
-    repo: git.Repo, key: str, global_config: bool = False
-) -> str:
+def git_config_get(repo: git.Repo, key: str, global_config: bool = False) -> str:
     """
     Get a git configuration value.
 
